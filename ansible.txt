@@ -1,13 +1,5 @@
 
 
-
-
-
-
-
-
-
-
 ansible -i dev --list-hosts all
 ansible -i dev --list-hosts "*"
 ansible -i dev --list-hosts loadbalancer
