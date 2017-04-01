@@ -1,0 +1,24 @@
+
+
+
+Create user with sudo access
+useradd -m -d /home/testuser/ -s /bin/bash -G sudo testuser
+
+give user sudo access
+usermod -aG sudo testuser
+
+
+create user with home dir
+useradd -m user
+passwd user
+sudo usermod -aG sudo jenkins
+
+
+find process id of specific port: 
+sudo fuser 80/tcp
+
+kill -9 pid
+
+
+
+

@@ -1,0 +1,38 @@
+Disable secure boot in bios settings
+
+sudo apt-get install virtualbox
+sudo apt-get install vagrant
+
+
+sudo apt-get install linux-headers-generic
+sudo apt-get install virtualbox-dkms
+sudo dpkg-reconfigure virtualbox-dkms
+
+bsdtar curl libruby1.9.1 libyaml-0-2 ruby ruby-childprocess ruby-erubis
+ruby-ffi ruby-i18n ruby-log4r ruby-net-scp ruby-net-ssh ruby1.9.1 vagrant
+
+3. Deploy your development environment.
+
+vagrant box add precise32 http://files.vagrantup.com/precise32.box
+vagrant box add 'CentOS 7 x86_64' 'https://github.com/vezzoni/vagrant-vboxes/releases/download/0.0.1/centos-7-x86_64.box'
+
+4. Start Vagrant.
+
+vagrant init
+NOTE: The “vagrant init” command sets up a Vagrant environment by placing a Vagrant file in the appropriate directory on your machine.
+
+
+
+ sudo mokutil --disable-validation
+ lsmod | grep vboxdrv
+vboxdrv               454656  3 vboxnetadp,vboxnetflt,vboxpci
+
+sudo apt install mokutil
+sudo mokutil --disable-validation
+
+vagrant init bento/centos-7.2
+vagrant up
+
+
+
+192.168.0.17

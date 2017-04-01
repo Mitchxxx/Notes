@@ -1,0 +1,198 @@
+
+******************Install Jenkins Centos***********************
+
+Step 1: Update your CentOS 7 system
+
+One of the Linux system administrator's best practices is keeping a system up to date. Install the latest stable packages, then reboot.
+
+sudo yum install epel-release
+sudo yum update
+sudo reboot
+When the reboot finishes, login with the same sudo user.
+
+
+Use the official YUM repo to install the latest stable version of Jenkins, which is 1.651.2 at the time of writing:
+
+cd ~
+sudo wget -O /etc/yum.repos.d/jenkins.repo http://pkg.jenkins-ci.org/redhat-stable/jenkins.repo
+sudo rpm --import http://pkg.jenkins-ci.org/redhat-stable/jenkins-ci.org.key
+sudo yum install jenkins
+Start the Jenkins service and set it to run at boot time:
+
+sudo systemctl start jenkins.service
+sudo systemctl enable jenkins.service
+In order to allow visitors access to Jenkins, you need to allow inbound traffic on port 8080:
+
+sudo firewall-cmd --zone=public --permanent --add-port=8080/tcp
+sudo firewall-cmd --reload
+Now, test Jenkins by visiting the following address from your web browser:
+
+http://<your-Vultr-server-IP>:8080
+
+
+Jenkins requires Java in order to run, yet certain distros don't include this by default. To install the Open Java Development Kit (OpenJDK) run the following:
+sudo yum install java
+
+Note: If running CentOS, ensure you follow the guide below.
+Start/Stop
+
+    sudo service jenkins start/stop/restart
+    sudo chkconfig jenkins on
+
+Note: if you get the following error message, ensure that Java has been installed:
+
+Starting jenkins (via systemctl):  Job for jenkins.service failed. See 'systemctl status jenkins.service' and 'journalctl -xn' for details.
+                                                           
+
+    Jenkins will be launched as a daemon on startup. See /etc/init.d/jenkins for more details.
+    The 'jenkins' user is created to run this service. If you change this to a different user via the config file, you must change the owner of /var/log/jenkins, /var/lib/jenkins, and /var/cache/jenkins.
+    Log file will be placed in /var/log/jenkins/jenkins.log. Check this file if you are troubleshooting Jenkins.
+    /etc/sysconfig/jenkins will capture configuration parameters for the launch.
+    By default, Jenkins listen on port 8080. Access this port with your browser to start configuration.  Note that the built-in firewall may have to be opened to access this port from other computers.  (See http://www.cyberciti.biz/faq/disable-linux-firewall-under-centos-rhel-fedora/ for instructions how to disable the firewall permanently)
+    A Jenkins RPM repository is added in /etc/yum.repos.d/jenkins.repo
+
+
+
+***************Install jenkins on ubuntu******************************
+
+jenkins password: 9f5457008ecb41a9bdd8add60891982a
+
+wget -q -O - https://jenkins-ci.org/debian/jenkins-ci.org.key | sudo apt-key add -
+sudo sh -c 'echo deb http://pkg.jenkins-ci.org/debian-stable binary/ > /etc/apt/sources.list.d/jenkins.list'
+sudo apt-get update
+sudo apt-get install jenkins
+
+uninstall
+sudo apt-get purge jenkins
+sudo apt-get install jenkins
+
+installed in /var/lib/jenkins
+
+Grant jenkins access to maven
+chown -R jenkins:jenkins /usr/share/maven
+export PATH=$PATH:/usr/share/maven/bin/
+
+in node set up:
+
+create a user (jenkins will connect to the node using this credentials or authenticate via ssh keys)
+
+useradd -d /var/lib/jenkins/ -m -s /bin/bash jenkins
+passwd jenkins
+grant admin access to user
+sudo usermod -a -G sudo hduser
+
+
+
+build archive destination:
+var/lib/jenkins/jobs/CucumberJavaSelenium/builds/lastSuccessfulBuild/com.awan$cucumber-selenium/archive/com.awan/cucumber-selenium/1.0
+cucumber-selenium-1.0-bin.tar.gz  
+
+copy file from machine to machine
+
+scp aws.pem ubuntu@ec2-54-197-12-91.compute-1.amazonaws.com:/ubuntu/home
+scp -i aws.pem ubuntu@54.197.12.91:/ubuntu/home 
+scp -i ~/.ssh/key.pem FILENAME user@EC2HOST:~/
+
+sudo ssh-copy-id ubuntu@54.197.12.91
+cat ~/.ssh/id_rsa.pub | ssh ubuntu@54.197.12.91 "mkdir -p ~/.ssh && cat >>  ~/.ssh/authorized_keys"
+
+
+export PATH=/usr/bin:/bin
+
+
+
+How to setup a Jenkins slave with ssh private key
+(Copy and Past, Enter Directly Version)
+Jing, mqjing@gmail.com
+
+Quick Guide (4 steps)
+ETA: 10 mins
+Slave Machine
+# init: [Slave] Create Account for Autobuild
+slave:~$ sudo adduser jing_autobuild
+
+# Step 1: Create private key and public key
+slave:~$ ssh-keygen -t rsa -C "The access key for the slave Jing"
+(note: Enter passphrase)
+Output:
+private key: id_rsa         # copy to master 
+public key: id_rsa.pub    # copy to slave (.ssh/authorized_keys)
+
+# Step 2: Setup Authorized key
+    slave:~$ cat id_rsa.pub > ~/.ssh/authorized_keys
+
+
+Jenkins Master Machine
+# Step 3: Setup the Credential key
+[Manage Jenkins] -> [Manage Credential] -> [Add Credentials]: 
+Select: SSH Username with private key
+    
+    Info
+    # you are on the slave
+(a) copy the private key
+    slave:~$ cd .ssh;cat id_rsa    
+
+# you are on the Jenkins master
+(b) paste to the jenkins master board
+      Private key:
+      Enter directly: <private key ascii>
+
+
+
+# Step 4: Create Node
+[Manage Jenkins] -> [Manage Node] -> [New Node]
+
+Info
+ Remote FS root: /home/jing_autobuild
+ Host: <slave ip>
+ Credentials: <select credentials>
+
+permission issues on /var/lib/jenkins
+slave directory works: home/jenkins
+
+
+
+Remove password auth
+
+/etc/init.d/jenkins stop
+Now modify the config XML
+
+sudo vi /var/lib/jenkins/config.xml
+
+Turn security off and remove the <authorizationStrategy> node
+<authorizationStrategy class="hudson.security.FullControlOnceLoggedInAuthorizationStrategy">
+    <denyAnonymousReadAccess>true</denyAnonymousReadAccess>
+  </authorizationStrategy>
+
+
+<useSecurity>false</useSecurity>
+Now restart Jenkins and head over to your admin UI to resecure it quick before the trolls get in.
+
+/etc/init.d/jenkins start
+
+
+
+After the installation of Jenkins and Docker. Add jenkins user to dockergroup (like you did)
+
+sudo gpasswd -a jenkins docker
+Edit the following file
+
+vi /usr/lib/systemd/system/docker.service
+And edit this rule to expose the API :
+
+ExecStart=/usr/bin/docker daemon -H unix:// -H tcp://localhost:2375
+Now it's time to reload and restart your Docker daemon
+
+systemctl daemon-reload
+systemctl restart docker
+Then I restarted jenkins and I was able to perform docker commands as jenkins user in my jenkins jobs
+
+sudo service jenkins restart
+
+
+
+
+
+
+
+

@@ -1,0 +1,21 @@
+
+RubyGems installs with ruby
+
+gem install rubygems-update
+update_rubygems
+gem update --system
+
+gem install bundler (bundler allows you to install libs)
+
+To install libs create a Gemfile in root folder of progject and add the libs here
+
+
+source 'https://rubygems.org'
+gem 'capybara'
+gem 'cucumber'
+gem 'selenium-webdriver'
+gem 'cucumber-rails'
+
+run 'bundle install' to install the libx
+
+To run cucumber tests: 'bundle exec cucumber'

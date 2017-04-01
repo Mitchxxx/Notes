@@ -1,0 +1,14 @@
+Create a request
+FileInputStream fis = new FileInputStream(new File(strPath)
+MessageFactory factory = MessageFactory.newInstance();
+SOAPMessge reqMsg = factory.createMessage(new MimeHeaders(), fis);
+
+Create a response
+SOAPConnectionFactory soapConnectionFactory = SOAPConnection.newInstance();
+SOAPConnection soapConnection = soapConnectionFactory.createConnection();
+SOAPMessage soapResponse = soapConnection.call(reqMsg, endPoint)
+
+SOAP Body
+SOAPBody soapBody = soapResponse.getSOAPBody();
+NodeList elements = soapBody.getElementsByTagName("tag:name");
+String singleElement = elements.item(0).getTextContext();

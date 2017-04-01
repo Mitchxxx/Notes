@@ -1,0 +1,54 @@
+---------CHEF-------
+
+uninstall chef
+dpkg --list | grep chef # or dpkg --status chef
+then purge (see man dpkg):
+dpkg -P chef
+
+sudo apt-get remove apache2
+sudo apt-get purge apache2
+sudo apt-get autoremove
+
+echo "cookbook_path [ '/home/imran/TestDevProjects/chef-repo/cookbooks' ]" > .chef/knife.rb
+
+Connect (SSH) to aws vm
+node1
+
+bootstrap a node (aws vm) to Chef server - chef adds the client.pem to the client
+
+with ssh key
+knife bootstrap ADDRESS --ssh-user USER --sudo --identity-file IDENTITY_FILE --node-name node1-ubuntu --run-list 'recipe[learn_chef_apache2]'
+knife bootstrap 54.165.69.191 --ssh-user ec2-user -i aws.pem --sudo --node-name node1 --run-list 'recipe[learn_chef_apache2]'
+
+with password
+knife bootstrap 192.168.0.15 --ssh-user imran --ssh-password 'orange' --sudo --use-sudo-password --node-name node1-ubuntu --run-list 'recipe[learn_chef_apache2]'
+
+
+
+when bootstrapping ensure /etc/chef/client.pem is removed from the node.
+
+Attach a recipe to node
+knife node run_list set test-node 'recipe[iptables]'
+
+
+knife cookbook create COOKBOOK_NAME 
+chef generate cookbook learn_chef_apache2
+knife node show nodename
+knife download cookbooks 'name'
+knife cookbook delete cookbook_name
+knife cookbook upload cookbook_name
+knife node list
+
+knife node run_list add NODE_NAME RUN_LIST_ITEM (options)
+knife node run_list set node2 recipe[java]
+knife node run_list remove NODENAME role[myrole],recipe[myrecipe]
+
+edit data of an node
+knife node edit node1 -a
+Details about the node
+knife role show node1
+
+Install cookbook to node (run on node)
+chef-client
+
+

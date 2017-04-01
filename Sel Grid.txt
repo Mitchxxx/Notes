@@ -1,0 +1,65 @@
+docker run -p 8888:8080 -v /var/lib/jenkins/jobs/BuildApp/workspace/target/webapp.war:/usr/local/tomcat/webapps/docker-example.war imranawan/tomcat
+
+docker run -d -p 4444:4444 --name selenium-hub selenium/hub
+docker run -d -P --link selenium-hub:hub selenium/node-firefox
+
+
+hub: 54.82.250.102 (172.31.58.231)
+node ip: 52.207.240.6 (172.31.51.188)
+
+http://54.82.250.102:4444/grid/console
+
+docker run -d -p 5555:5555 -e REMOTE_HOST="http://<PASTE-NODE-IP>:5555" -e HUB_PORT_4444_TCP_ADDR="<PASTE-HUB-IP>" -e HUB_PORT_4444_TCP_PORT="4444" --name chrome-node selenium/node-chrome:2.47.1
+
+Register Hub:
+sudo docker run -d -p 4444:4444 --name selenium-hub selenium/hub
+Register node:
+sudo docker run -d -p 5555:5555 -e REMOTE_HOST="http://52.207.240.6:5555" -e HUB_PORT_4444_TCP_ADDR="54.82.250.102" -e HUB_PORT_4444_TCP_PORT="4444" --name firefox-node imranawan/node-firefox
+
+sudo docker run -d -p 5555:5555 -e REMOTE_HOST="http://52.207.240.6:5555" -e HUB_PORT_4444_TCP_ADDR="54.82.250.102" -e HUB_PORT_4444_TCP_PORT="4444" --name chrome-node imranawan/node-chrome
+
+Updating a selenium grid node image
+
+docker exec -it firefox (container name) bash
+Our node is configured by config.json file. How can we locate it? First, let’s go sudo…
+
+$ sudo su
+… and find it!
+
+$ find . -name “config.json”
+
+Our config is in ./opt/selenium/ directory. We can’t open config.json in vi, vim, or any other, because Docker containers are running on minimalistic linux vm’s, without any additional tools. We have apt-get though, so we can add some!
+
+$ apt-get update && apt-get install vim
+
+change instances in config file and restart container.
+
+docker restart firefox
+
+
+
+
+docker-compose.yml file
+
+hub:
+  image: selenium/hub
+  ports:
+    - "4444:4444"
+firefox:
+  image: selenium/node-firefox
+  links:
+    - hub
+chrome:
+  image: selenium/node-chrome
+  links:
+    - hub
+
+
+docker-compose up
+
+
+
+
+
+
+

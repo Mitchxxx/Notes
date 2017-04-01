@@ -1,0 +1,176 @@
+
+
+Prov vm
+gcloud compute instances create ubuntu --image-projec
+
+gcloud ssh ubuntu
+
+sudo apt-get install nginx
+sudo systemctl start nginx
+sudo systemctl status nginx
+curl http://127.0.0.1
+
+KUBERNETES
+
+Add vm to cluster
+
+- Create a vm
+- Container Reg > Container Registry > Cloud shell
+
+gcloud compute zones list
+gcloud config set compute/zone europe-west1-d
+
+gcloud container clusters create imran-1
+
+Goto Compute Engine > VM Instances (view three vms)
+
+gcloud container clusters describe imran-1
+
+username and passowrd to login to kubernetes interface
+  password: Y5Wol2haTd64Q5V3
+  username: admin
+
+KUBENETE INTERFACE
+
+kubectl cluster-info
+
+get the kubernets dashboard url: 
+
+kubernetes-dashboard is running at https://104.155.120.19/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
+
+navigate to dashboard and enter uesrname / password as above
+
+
+DEPLOY APP TO CLUSTER
+
+kubectl run wordpress --image=tutum/wordpress --port=80
+we are exposing the pod
+
+kubectl expose deployment wordpress --type=LoadBalancer
+kubectl describe services wordpress
+
+navigate to LoadBalancer Ingress:   35.187.20.222 to view word press in browser
+
+also get external ip address by: 
+
+kubectl get services wordpress
+
+delete so you won't be charged
+kubectl delete services wordpress
+kubectl delete deployment wordpress
+
+
+PUSH / PULL IMAGE TO KUBERNETES
+
+docker pull mongo
+
+push to google repo: 
+docker tag mongo gcr.io/imranawan-157509/mongo
+gcloud docker push gcr.io/imranawan-157509/mongo
+view images in container registry of dashboard
+
+
+GUEST BOOK CLUSTER
+
+Container Reg > Container Registry > Cloud shell
+gcloud container clusters create imran-2
+
+Note: By the way, use the following two commands to get the K8s UI
+glcoud container clusters describe imran-2 (this provides the usrname and password)
+kubectl cluster-info (this provides the URL for k8 dashboard)
+
+gcloud container clusters list
+
+  password: leFBDfRJtZtZ1ag4
+  username: admin
+
+	
+DEPLOYING REDIS MASTER / SERVICE 
+
+deploy guestbook files to cluster
+
+git clone https://github.com/razaphd/kubernetes.git
+
+kubectl create -f redis-master-deployment.yaml
+kubectl create -f redis-master-service.yaml
+
+kubectl get pods
+
+should show up in k8 dashboard for this cluster
+
+- Think of service as logical set of pods (microservices)
+- Replication controllers destroy and create pods dynamically
+- Each pod gets its own IP address
+
+- Create a master and two slaves
+
+A ReplicationController ensures that a specified number of pod “replicas” are running at any one time. In other words, a ReplicationController makes sure that a pod or homogeneous set of pods are always up and available.
+
+DEPLOYING REDIS SLAVES / SERVICE
+
+kubectl create -f redis-slave-controller.yaml
+can update the yaml to adjust the  number of nodes (pods). Default is 2
+
+slave service
+
+kubectl create -f redis-slave-service.yaml (guest dir) 
+kubectl get service
+
+
+DEPLOYING FRONT END
+
+kubectl create -f frontend-deployment.yaml (3 pods created)
+kubectl get pods
+
+DEPLOYING EXTERNAL IP
+
+- Create guestbook web service with external IP
+
+kubectl create -f frontend-service.yaml 
+
+kubectl describe service frontend (no ip address, so need to set load balance for exposing ip address)
+
+vi frontend-service.yaml (uncomment type loadbalancer)
+
+- Reset the service
+
+kubectl delete service frontend
+kubectl create -f frontend-service.yaml 
+kubectl get service (notice there should now be external address for frontend)
+kubectl get service frontend
+
+
+
+git clone https://github.com/omerio/kubernetes-graphviz.git
+
+
+
+  password: c3jo3IrnzQEvQwkh
+  username: admin
+
+ https://104.199.104.161/api/v1/proxy/namespaces/kube-system/services/kubernetes-dashboard
+
+gcloud compute ssh node_name
+
+scale pod
+
+kubectl scale rc fronend-contr --replicas=5
+
+Deploying Services
+Connect fronend pods to backend pods
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

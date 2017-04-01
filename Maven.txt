@@ -1,0 +1,44 @@
+***********************Install Apache Maven CentOS***********************
+
+After verifying java version on you system. Download Apache maven from its official website or use following command to download Apache Maven 3.3.9.
+
+$ cd /opt
+$ wget http://www-eu.apache.org/dist/maven/maven-3/3.3.9/binaries/apache-maven-3.3.9-bin.tar.gz
+Now extract downloaded archive using following command.
+
+$ sudo tar xzf apache-maven-3.3.9-bin.tar.gz
+$ sudo ln -s apache-maven-3.3.9 maven
+Step 3 – Setup Environment Variables
+
+As you have downloaded pre compiled Apache Maven files on your system. Now set the environments variables by creating new file /etc/profile.d/maven.sh.
+
+$ sudo vi /etc/profile.d/maven.sh
+and add following content.
+
+export M2_HOME=/opt/maven
+export PATH=${M2_HOME}/bin:${PATH}
+Now load the environment variables in current shell using following command.
+
+$ source /etc/profile.d/maven.sh
+
+
+
+
+
+***********Install Maven Ubuntu*******************************
+
+sudo -H gedit /etc/apt/sources.list
+Add the following line the sources.list file:
+deb http://ppa.launchpad.net/natecarlson/maven3/ubuntu precise main
+deb-src http://ppa.launchpad.net/natecarlson/maven3/ubuntu precise main
+sudo apt-get update && sudo apt-get install maven3
+sudo ln -s /usr/share/maven3/bin/mvn /usr/bin/mvn
+
+**********************************************************
+
+
+M2_HOME=/usr/share/maven3
+export M2_HOME
+M2=$M2_HOME/bin
+export M2
+

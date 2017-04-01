@@ -1,0 +1,127 @@
+
+
+
+
+
+MySQL credentials on Centos box:
+User: root
+Password: Blueor@nge12
+
+
+How to Install MySQL on Ubuntu and CentOS
+If you don't have MySQL installed on your droplet, you can quickly download it.
+
+Ubuntu:
+sudo apt-get install mysql-server
+
+Centos:
+sudo yum install mysql-server
+/etc/init.d/mysqld start
+How to Access the MySQL shell
+Once you have MySQL installed on your droplet, you can access the MySQL shell by typing the following command into terminal:
+
+
+login into mysql
+mysql -u root -p
+
+
+create a new user to grant access to specific db.
+
+GRANT ALL PRIVILEGES ON dbTest.* To 'user'@'hostname' IDENTIFIED BY 'password';
+
+
+In ubuntu need to uncommented this line in php.ini which is located at /etc/php/7.0/apache2/php.ini
+
+extension=php_mysqli.so
+
+
+
+
+Install php on ubuntu
+
+sudo apt-get install php5 libapache2-mod-php5
+
+
+***********************Install Apache and PHP on CentOS 6****************************
+
+
+Last updated on: 2016-06-21 Authored by: Rackspace Support
+This article demonstrates how to install Apache and PHP on CentOS 6. CentOS 6 comes with Apache 2.2.3 and PHP 5.1.6, and you can install them by using the default CentOS Package Manager, yum. The advantages of using yum (as opposed to installing by using source code) are that you get any security updates (when they are distributed) and dependencies are automatically handled.
+
+Install Apache
+
+Run the following command:
+
+ sudo yum install httpd mod_ssl
+Because the server does not start automatically when you install Apache, you must start it manually.
+
+ sudo /usr/sbin/apachectl start
+The following message is displayed:
+
+ Starting httpd: httpd: Could not reliably determine the server's fully qualified domain name, using 127.0.0.1 for ServerName
+The IP address (shown in this example as 127.0.0.1) is used as the server name by default. In the following steps, set the server name for the next time the server is started.
+
+Open the main Apache configuration file.
+
+ sudo nano /etc/httpd/conf/httpd.conf
+Toward the end of the file, locate the section that starts with ServerName and gives an example.
+
+ #ServerName www.example.com:80
+Enter your cloud server host name or a fully qualified domain name. In the following example, the host name is demo.
+
+ ServerName demo
+Reload Apache.
+
+ sudo /usr/sbin/apachectl restart
+Open the port to run Apache
+
+Apache runs on port 80. In some versions of CentOS, a firewall, which is installed by default, blocks access to port 80. Perform the following steps to open the port.
+
+Run the following command:
+
+ sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+After adding that instruction, save your firewall rules so that your web server is accessible the next time you reboot.
+
+ sudo service iptables save
+Test the Apache installation
+
+Navigate to your Cloud Server IP address (for example, http://123.45.67.89).
+
+If the default CentOS Apache “welcome” screen is displayed, the installation was successful. Contact Rackspace support if you have any problems.
+
+Configure Apache to run automatically
+
+Now that Apache is installed and working, set to start automatically when the server is rebooted.
+
+Run the following command:
+
+ sudo /sbin/chkconfig httpd on
+Test to confirm that the setting works.
+
+ sudo /sbin/chkconfig --list httpd
+ httpd           0:off        1:off  2:on    3:on    4:on    5:on    6:off
+Install PHP
+
+Run the following command:
+
+ sudo yum install php php-mysql php-devel php-gd php-pecl-memcache php-pspell php-snmp php-xmlrpc php-xml
+The preceding command does not install all the modules available, just a few common ones.
+
+Reload Apache.
+
+ sudo /usr/sbin/apachectl restart
+
+****************************************************************
+
+
+
+
+
+
+
+
+
+
+
+
+

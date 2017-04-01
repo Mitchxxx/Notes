@@ -1,0 +1,77 @@
+build server
+ssh connect: ssh -i "aws1.pem" ubuntu@ec2-54-164-55-27.compute-1.amazonaws.com
+private IP: 172.31.63.34
+public IP: 54.164.55.27
+
+Web server
+ssh -i "aws1.pem" ubuntu@ec2-54-152-17-124.compute-1.amazonaws.com
+private IP: 172.31.62.210
+public IP: 54.152.17.124
+
+TestHub
+ssh -i "aws1.pem" ubuntu@ec2-54-82-250-102.compute-1.amazonaws.com
+private IP: 172.31.58.231
+public IP: 54.82.250.102
+
+TestNodes
+ssh -i "aws1.pem" ubuntu@ec2-52-207-240-6.compute-1.amazonaws.com
+private IP: 172.31.51.188
+public IP: 52.207.240.6
+
+
+     sudo cp /home/webappjenkins/builds/workspace/WebApp/target/webapp.war /usr/share/tomcat8/webapps
+
+
+------SSH------------
+-------
+ssh-copy-id -i id_rsa.pub ubuntu@ec2-54-175-160-104.compute-1.amazonaws.com
+ssh-copy-id -i $HOME/.ssh/id_rsa.pub ubuntu@ec2-54-175-160-104.compute-1.amazonaws.com
+scp home/ubuntu/.ssh/id_rsa.pub ubuntu@ec2-54-175-160-104.compute-1.amazonaws.com:~/.ssh/authorized_keys
+scp $HOME/ubuntu/.ssh/id_rsa.pub ubuntu@ec2-54-175-160-104.compute-1.amazonaws.com:~/.ssh/authorized_keys
+
+
+---------AWS----------
+For a VM create a new protocol to allow incoming traffic for web service e.g
+Goto Security Groups > Click Inbound > Edit 
+Type: http; protocol: TCP; Port Range: 80
+
+
+-------DOCKER----------
+
+
+
+
+-----------SELENIUM GRID ---------------------------
+
+hub: 54.82.250.102 (172.31.58.231)
+node ip: 52.207.240.6 (172.31.51.188)
+
+http://54.82.250.102:4444/grid/console
+
+docker run -d -p 5555:5555 -e REMOTE_HOST="http://<PASTE-NODE-IP>:5555" -e HUB_PORT_4444_TCP_ADDR="<PASTE-HUB-IP>" -e HUB_PORT_4444_TCP_PORT="4444" --name chrome-node selenium/node-chrome:2.47.1
+
+Register Hub:
+sudo docker run -d -p 4444:4444 --name selenium-hub selenium/hub
+Register node:
+sudo docker run -d -p 5555:5555 -e REMOTE_HOST="http://52.207.240.6:5555" -e HUB_PORT_4444_TCP_ADDR="54.82.250.102" -e HUB_PORT_4444_TCP_PORT="4444" --name firefox-node imranawan/node-firefox
+
+sudo docker run -d -p 5555:5555 -e REMOTE_HOST="http://52.207.240.6:5555" -e HUB_PORT_4444_TCP_ADDR="54.82.250.102" -e HUB_PORT_4444_TCP_PORT="4444" --name chrome-node imranawan/node-chrome
+
+Updating a selenium grid node image
+
+docker exec -it firefox (container name) bash
+Our node is configured by config.json file. How can we locate it? First, let’s go sudo…
+
+$ sudo su
+… and find it!
+
+$ find . -name “config.json”
+
+Our config is in ./opt/selenium/ directory. We can’t open config.json in vi, vim, or any other, because Docker containers are running on minimalistic linux vm’s, without any additional tools. We have apt-get though, so we can add some!
+
+$ apt-get update && apt-get install vim
+
+change instances in config file and restart container.
+
+docker restart firefox
+

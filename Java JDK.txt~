@@ -1,0 +1,37 @@
+**************INSTALL JAVA JDK ON CENTOS****************************
+
+cd ~
+wget --no-cookies --no-check-certificate --header "Cookie: gpw_e24=http%3A%2F%2Fwww.oracle.com%2F; oraclelicense=accept-securebackup-cookie" "http://download.oracle.com/otn-pub/java/jdk/8u60-b27/jdk-8u60-linux-x64.rpm"
+Then install the RPM with this yum command (if you downloaded a different release, substitute the filename here):
+
+sudo yum localinstall jdk-8u60-linux-x64.rpm
+Now Java should be installed at /usr/java/jdk1.8.0_60/jre/bin/java, and linked from /usr/bin/java.
+
+You may delete the archive file that you downloaded earlier:
+
+rm ~/jdk-8u60-linux-x64.rpm
+
+sudo cp /etc/profile /etc/profile_backup
+echo 'export JAVA_HOME=/usr/lib/jvm/jre-1.8.0-openjdk' | sudo tee -a /etc/profile
+echo 'export JRE_HOME=/usr/lib/jvm/jre' | sudo tee -a /etc/profile
+source /etc/profile
+Finally, you can print them for review:
+
+echo $JAVA_HOME
+echo $JRE_HOME
+
+
+
+
+--------Install JAVA On Ubuntu----------
+
+sudo apt-get update
+sudo apt-get install software-properties-common
+sudo apt-get install python3-software-properties
+sudo apt-get install vim
+
+sudo add-apt-repository ppa:webupd8team/java
+apt-get update
+sudo apt-get install oracle-java8-installer
+
+

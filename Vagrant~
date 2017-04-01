@@ -1,0 +1,5 @@
+vagrant init ubuntu/xenial64
+Or update vagrant file to specify the OS.
+
+vagrant up
+

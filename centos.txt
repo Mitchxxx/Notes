@@ -1,0 +1,189 @@
+139.59.165.0
+centos ports
+
+8888: webapp (docker)
+http://139.59.165.0:4444/grid/console
+
+
+helix ports
+80: apache (var)
+8080: jenkins
+
+
+*****************USEFUL*******************
+
+Remove jdk
+first find all references to java
+rpm -qa | grep java
+
+sudo yum remove 'nameOfpackage'
+
+
+********************LINUX COURSE**********************
+
+
+ENVIRONMENT VARIABLES
+
+Storage location that has name and value, affect how programs behave. 
+
+$ printenv 
+
+this will pring all env variables
+
+PATH variable, value of variable affects how program behave. Shell uses the path to determine which path to execute and in what order.
+
+$ printenv JAVA_HOME
+or
+echo $JAVA_HOME
+
+to create var
+
+$ export VAR="value"
+example: export EDITOR="vi"
+also can be used to udpate existing variable
+
+to remove 
+unset VAR
+
+Persisting Env Var
+
+cat ~/.bash_profile
+example: export EDITOR="vi"
+
+or in /etc/profile
+to save: source /etc/profile
+
+
+if list is too long the use pipeline 
+
+printenv | less
+
+
+
+PROCESSES
+
+-e everything, all processes
+-f ful format
+-u username - Specific processes
+-p pid - Display information for PID
+
+ps -e  Display all processes
+ps -ef Display all processes, full
+ps -eH  Display a process tree
+ps -e --forest Display a process tree
+ps -u username Dispaly user's processes
+
+pstree - Display processes in tree format
+top - Interactive process viewer
+htop - Interactive process viewer
+
+specfic process
+ps -p processId
+
+Terminating processes
+Ctrl-C (forground)
+kill [-sig] pid
+kill -l
+kill 123
+kill -15 123
+kill -TERM 123
+kill -9 123
+
+CRON
+
+* cron - A time based job scheduling service.
+* crontab - A program to create, read and update
+* Use cron to schedule and automate tasks.
+	
+# Run every Monday at 07:00
+
+0 7 * * 1 /opt/sales/bin/weekly-report
+| | | | |
+| | | | +--Day of the week (0-6)
+| | | +----Month of the year (1-12)
+| | +------Day of the month (1-31)
+| +--------Hour (0-23)
++----------Minute (0-59)
+
+run at 02:00 daily
+0 2 * * * /root/backupdb > /tmp/db.log 2>&1
+
+can put different dilimeters such as 0,30 or */2 (every 30 mins)
+
+run for first 5 mins of the hour
+0-4 * * * * /opt/...
+
+Crontab shortcuts
+
+@yearly    0 0 1 1 * 
+@annually  0 0 1 1 * 
+@monthly   0 0 1 * * 
+@weekly    0 0 * * 0 
+0daily     0 0 * * * 
+@midnight  0 0 * * * 
+@hourly    0 * * * * 
+
+
+
+crontab file - Install a new crontab from file
+crontab -l List your cron jobs
+crontab -e Edit your cron jobs
+crontab -r Remove all of your cron jobs
+
+crontab -l
+vi my-cron
+
+# Run every Monday at 07:00
+0 7 * * 1 /opt/sales/bin/weekly-report
+
+to add a file to cron job
+crontab fileName
+
+USERS
+
+sudo -u bob /opt/ (run command as particular user)
+sudo su (switch to root)
+sudo su - user
+sudo -s (switch to root)
+
+visudo (edit the /etc/sudoers file)
+
+
+SHELL HISTORY
+
+Shell history is stored in memory and disk
+
+~/.bash_history
+~/.history
+~/.histfile
+
+!N - Repeat command line number N
+!! - Repeat the previous command line
+!string - Repeat the most recent command starting with "string"
+
+
+
+INSTALLING PROGRAMS & PACKAGES
+
+
+rpm -qa - lists all packages
+rpm -qf /path/to/file - List the files package
+rpm -ql package - List the package files
+rpm -ivh package.rpm - Install package
+rpm -e pacakge - Uninstall package
+
+
+LINUX BOOT PROCESS
+
+- BIOS
+- Boot Loaders
+- Linux Kernels
+- Runlevels
+
+************INSTALL OPEN SHIFT**************
+
+
+
+
+
+

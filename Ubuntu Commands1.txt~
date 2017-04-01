@@ -1,0 +1,97 @@
+export PATH=/usr/bin:/bin
+permissions to file:
+chmod a+x filename
+
+assign sudo rights, amend the file /etc/sudoers
+
+
+MAVEN INSTALL
+
+sudo -H gedit /etc/apt/sources.list
+Add the following line the sources.list file:
+deb http://ppa.launchpad.net/natecarlson/maven3/ubuntu precise main
+deb-src http://ppa.launchpad.net/natecarlson/maven3/ubuntu precise main
+sudo apt-get update && sudo apt-get install maven3
+sudo ln -s /usr/share/maven3/bin/mvn /usr/bin/mvn
+
+--------Install JAVA----------
+
+sudo apt-get update
+sudo apt-get install software-properties-common
+sudo apt-get install python3-software-properties
+sudo apt-get install vim
+
+sudo add-apt-repository ppa:webupd8team/java
+apt-get update
+sudo apt-get install oracle-java8-installer
+
+----------Set Env Variables-------------
+
+M2_HOME=/usr/share/maven3
+export M2_HOME
+M2=$M2_HOME/bin
+export M2
+
+JAVA_HOME=/usr/lib/jvm/java-8-oracle
+JRE_HOME=$JAVA_HOME/jre
+PATH=$JRE_HOME/bin:$JAVA_HOME/bin:$PATH
+PATH=$M2:$PATH
+export JAVA_HOME
+export JRE_HOME
+export PATH
+
+Create user with sudo access
+useradd -m -d /home/testuser/ -s /bin/bash -G sudo testuser
+
+give user sudo access
+usermod -aG sudo testuser
+
+
+To Set JAVA_HOME / PATH for all user, You need to setup global config in /etc/profile OR /etc/bash.bashrc file for all users:
+
+# vi /etc/profile
+Next setup PATH / JAVA_PATH variables as follows:
+
+export PATH=$PATH:/usr/java/jdk1.5.0_07/bin
+export PATH=$PATH:/usr/java/jdk1.5.0_07/bin
+Save and close the file. Once again you need to type the following command to activate the path settings immediately:
+
+# source /etc/profile
+OR
+
+# . /etc/profile
+
+
+
+create user with home dir
+useradd -m user
+passwd user
+sudo usermod -aG sudo jenkins
+
+
+find process id of specific port: 
+sudo fuser 80/tcp
+
+kill -9 pid
+
+
+
+Install web server
+
+yum update -y
+yum install httpd
+cd /var/www/html
+touch index.html healthcheck.html
+service httpd start
+
+#!/bin/bash
+yum install httpd -y
+yum update -y
+#aws s3 cp s3://bucketname/index.html /var/www/html/
+sudo aws s3 cp s3://imranawan /var/www/html/ --recursive --region eu-west-2
+service httpd start
+chkconfig httpd on 
+
+
+
+

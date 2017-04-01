@@ -1,0 +1,306 @@
+**************Install Apache on CentOS**************************
+
+
+Last updated on: 2016-06-21 Authored by: Rackspace Support
+This article demonstrates how to install Apache and PHP on CentOS 6. CentOS 6 comes with Apache 2.2.3 and PHP 5.1.6, and you can install them by using the default CentOS Package Manager, yum. The advantages of using yum (as opposed to installing by using source code) are that you get any security updates (when they are distributed) and dependencies are automatically handled.
+
+Install Apache
+
+Run the following command:
+
+ sudo yum install httpd mod_ssl
+Because the server does not start automatically when you install Apache, you must start it manually.
+
+ sudo /usr/sbin/apachectl start
+The following message is displayed:
+
+ Starting httpd: httpd: Could not reliably determine the server's fully qualified domain name, using 127.0.0.1 for ServerName
+The IP address (shown in this example as 127.0.0.1) is used as the server name by default. In the following steps, set the server name for the next time the server is started.
+
+Open the main Apache configuration file.
+
+ sudo nano /etc/httpd/conf/httpd.conf
+Toward the end of the file, locate the section that starts with ServerName and gives an example.
+
+ #ServerName www.example.com:80
+Enter your cloud server host name or a fully qualified domain name. In the following example, the host name is demo.
+
+ ServerName demo
+Reload Apache.
+
+ sudo /usr/sbin/apachectl restart
+Open the port to run Apache
+
+Apache runs on port 80. In some versions of CentOS, a firewall, which is installed by default, blocks access to port 80. Perform the following steps to open the port.
+
+Run the following command:
+
+ sudo iptables -I INPUT -p tcp --dport 80 -j ACCEPT
+After adding that instruction, save your firewall rules so that your web server is accessible the next time you reboot.
+
+ sudo service iptables save
+Test the Apache installation
+
+Navigate to your Cloud Server IP address (for example, http://123.45.67.89).
+
+If the default CentOS Apache “welcome” screen is displayed, the installation was successful. Contact Rackspace support if you have any problems.
+
+Configure Apache to run automatically
+
+Now that Apache is installed and working, set to start automatically when the server is rebooted.
+
+Run the following command:
+
+ sudo /sbin/chkconfig httpd on
+Test to confirm that the setting works.
+
+ sudo /sbin/chkconfig --list httpd
+ httpd           0:off        1:off  2:on    3:on    4:on    5:on    6:off
+
+
+****************************************************************************************************888
+
+
+
+
+************************Installation of Tomcat7 in ubuntu*******************
+
+* Precondition : Java SDK/JRE should be installed already.
+
+* The first thing to do is download the package "apache-tomcat-xxx.tar.gz" from the following link
+   http://tomcat.apache.org/download-70.cgi
+   under section "Binary Distributions" --> core --> tar.gz.
+
+* Now unpack it with the following command:
+   $ tar xvzf apache-tomcat-7.0.8.tar.gz
+
+* Move unpacked folder content to "/usr/share/tomcat7" directory (if there is no tomcat7 folder in
+    that path dont worry our following command do the work)
+   $ sudo mv apache-tomcat-7.0.8/ /usr/share/tomcat7
+
+* Now we define the environment variables JAVA_HOME and JRE_HOME in "environment" file. 
+    This file is in  /etc. Command to edit the file:
+   $ sudo gedit /etc/environment
+
+* Add :
+    JAVA_HOME="/usr/local/jdk1.6.0_38"
+    JRE_HOME="/usr/local/jdk1.6.0_38/jre"
+    PATH="...(other path):$JAVA_HOME:$JRE_HOME"
+
+JAVA_HOME="/usr/lib/jvm/java-8-oracle"
+JRE_HOME="$JAVA_HOME/jre"
+
+
+    Note : If you don't  know java SDK path run the command 
+               $ readlink -f $(which java) 
+
+* Even though we mentioned in environment file some times tomcat will not recognised it,
+  so we also add  JAVA_HOME and JRE_HOME in "catalina.sh" which is located in tomcat7/bin
+   $ sudo gedit /usr/share/tomcat7/bin/catalina.sh
+  Now just insert the JAVA_HOME and JRE_HOME after the first line, so the file is as follows:
+
+   #!/bin/sh
+   JAVA_HOME="/usr/local/jdk1.6.0_23"
+   JRE_HOME="/usr/local/jdk1.6.0_23/jre"
+   # Licensed to the Apache Software Foundation (ASF)...
+   #...
+   #...
+   ....
+
+
+
+* Now let's configure Tomcat users, this is done in the file "tomcat-users.xml"directory tomcat7/conf. Command to edit the file:
+  $ sudo gedit /usr/share/tomcat7/conf/tomcat-users.xml
+
+  Unlike previous versions where the administrator should own role "manager" now it should be
+   "manager-gui"to operate on the web administration tomcat7. The file would be as follows
+
+ <?xml version='1.0' encoding='utf-8'?>
+   <tomcat-users>
+       <role rolename="manager-gui"/>
+       <role rolename="manager-script"/>
+       <role rolename="manager"/>
+       <role rolename="admin-gui"/>
+       <role rolename="admin-script"/>
+       <role rolename="admin"/>
+
+      <user username="tomcat" password="tomcat" roles="manager-gui,
+       admin- gui,manager,admin,manager-script,admin-script"/>
+ </tomcat-users>
+
+* Thats it, every thing is ready lets run tomcat by following command,
+   $ sudo /usr/share/tomcat7/bin/startup.sh
+
+ Outupt :
+
+  Using CATALINA_BASE: /usr/share/tomcat7
+  Using CATALINA_HOME: /usr/share/tomcat7
+  Using JRE_HOME: /usr/local/jdk1.6.0_20/jre
+  Using CLASSPATH: /usr/share/tomcat7/bin/bootstrap.jar:/usr/share/tomcat7/bin/tomcat-juli.jar
+
+* Now open your web browser and type the following url:
+    http://localhost:8080/
+
+* To check Tomcat Manager  select "manager app" or paste "http://127.0.0.1:8080/manager/html" url.  It will ask for credentials to get details check our "tomcat-users.xml" file, in my case it is tomcat and tomcat.
+
+* Commands:
+     Starting server :
+            $ sudo /usr/share/tomcat7/bin/startup.sh
+     Stoping server :
+            $ sudo /usr/share/tomcat7/bin/shutdown.sh
+-----------------------------------------
+
+TOMCAT 
+
+sudo apt-get install tomcat7
+default location: /usr/share/tomcat7
+
+modify env var: vim ~/.bashrc
+export JAVA_HOME=/usr/lib/jvm/java-8-oracle
+export CATALINA_HOME=/usr/share/tomcat8
+to save changes: . ~/.bashrc
+
+  $CATALINA_HOME/bin/startup.sh
+
+SET ENV VAR
+
+gedit ~/.profile
+export M2_HOME=/usr/share/maven
+export JAVA_HOME=/usr/local/java/jdk1.7.0_79
+export M2=$M2_HOME/bin
+export MAVEN_OPTS="-Xms256m -Xmx512m"
+export PATH=$M2:$JAVA_HOME:$PATH
+
+open eclipse
+./eclipse -vm /usr/lib/jvm/java-7-openjdk-amd64/bin
+
+Web App (create new project)
+mvn archetype:generate -DgroupId=com.awan -DartifactId=webapp -DarchetypeArtifactId=maven-archetype-webapp -DinteractiveMode=false
+
+
+Install web server
+
+yum update -y
+yum install httpd
+cd /var/www/html
+touch index.html healthcheck.html
+service httpd start
+
+#!/bin/bash
+yum install httpd -y
+yum update -y
+#aws s3 cp s3://bucketname/index.html /var/www/html/
+sudo aws s3 cp s3://imranawan /var/www/html/ --recursive --region eu-west-2
+service httpd start
+chkconfig httpd on 
+
+start apache (ubuntu)
+/etc/init.d/apache2 start
+
+
+
+
+
+
+
+
+
+Maven home: /usr/share/maven3
+Java version: 1.8.0_121, vendor: Oracle Corporation
+Java home: /usr/lib/jvm/java-8-oracle/jre
+
+
+***************INSTALL APACHE ON UBUNTU*********************************8
+
+Step 1: Install Apache and Allow in Firewall
+The Apache web server is among the most popular web servers in the world. It's well-documented, and has been in wide use for much of the history of the web, which makes it a great default choice for hosting a website.
+
+We can install Apache easily using Ubuntu's package manager, apt. A package manager allows us to install most software pain-free from a repository maintained by Ubuntu. You can learn more about how to use apt here.
+
+For our purposes, we can get started by typing these commands:
+
+sudo apt-get update
+sudo apt-get install apache2
+Since we are using a sudo command, these operations get executed with root privileges. It will ask you for your regular user's password to verify your intentions.
+
+Once you've entered your password, apt will tell you which packages it plans to install and how much extra disk space they'll take up. Press Y and hit Enter to continue, and the installation will proceed.
+
+Set Global ServerName to Suppress Syntax Warnings
+
+Next, we will add a single line to the /etc/apache2/apache2.conf file to suppress a warning message. While harmless, if you do not set ServerName globally, you will receive the following warning when checking your Apache configuration for syntax errors:
+
+sudo apache2ctl configtest
+Output
+AH00558: apache2: Could not reliably determine the server's fully qualified domain name, using 127.0.1.1. Set the 'ServerName' directive globally to suppress this message
+Syntax OK
+Open up the main configuration file with your text edit:
+
+sudo nano /etc/apache2/apache2.conf
+Inside, at the bottom of the file, add a ServerName directive, pointing to your primary domain name. If you do not have a domain name associated with your server, you can use your server's public IP address:
+
+Note
+If you don't know your server's IP address, skip down to the section on how to find your server's public IP address to find it.
+/etc/apache2/apache2.conf
+. . .
+ServerName server_domain_or_IP
+Save and close the file when you are finished.
+
+Next, check for syntax errors by typing:
+
+sudo apache2ctl configtest
+Since we added the global ServerName directive, all you should see is:
+
+Output
+Syntax OK
+Restart Apache to implement your changes:
+
+sudo systemctl restart apache2
+You can now begin adjusting the firewall.
+
+Adjust the Firewall to Allow Web Traffic
+
+Next, assuming that you have followed the initial server setup instructions to enable the UFW firewall, make sure that your firewall allows HTTP and HTTPS traffic. You can make sure that UFW has an application profile for Apache like so:
+
+sudo ufw app list
+Output
+Available applications:
+  Apache
+  Apache Full
+  Apache Secure
+  OpenSSH
+If you look at the Apache Full profile, it should show that it enables traffic to ports 80 and 443:
+
+sudo ufw app info "Apache Full"
+Output
+Profile: Apache Full
+Title: Web Server (HTTP,HTTPS)
+Description: Apache v2 is the next generation of the omnipresent Apache web
+server.
+
+Ports:
+  80,443/tcp
+Allow incoming traffic for this profile:
+
+sudo ufw allow in "Apache Full"
+You can do a spot check right away to verify that everything went as planned by visiting your server's public IP address in your web browser (see the note under the next heading to find out what your public IP address is if you do not have this information already):
+
+http://your_server_IP_address
+
+
+******************************
+
+# Change directory to destination for Railo WAR contents:
+cd /var/www
+
+# Extract Railo WAR contents:
+sudo jar xvf ~/railo.war
+
+# Give Tomcat user file ownership:
+sudo chown -R tomcat6 /var/www/
+
+# Restart Tomcat service to ensure root app is picked up:
+sudo service tomcat6 restart
+
+
+view /etc/apache2/sites-enabled/000-default.conf
+DocumentRoot /var/www/html

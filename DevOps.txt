@@ -1,0 +1,46 @@
+build server
+ssh connect: ssh -i "aws1.pem" ubuntu@ec2-54-164-55-27.compute-1.amazonaws.com
+private IP: 172.31.63.34
+public IP: 54.164.55.27
+
+Web server
+ssh -i "aws1.pem" ubuntu@ec2-54-152-17-124.compute-1.amazonaws.com
+private IP: 172.31.62.210
+public IP: 54.152.17.124
+
+TestHub
+ssh -i "aws1.pem" ubuntu@ec2-54-82-250-102.compute-1.amazonaws.com
+private IP: 172.31.58.231
+public IP: 54.82.250.102
+
+TestNodes
+ssh -i "aws1.pem" ubuntu@ec2-52-207-240-6.compute-1.amazonaws.com
+private IP: 172.31.51.188
+public IP: 52.207.240.6
+
+
+     sudo cp /home/webappjenkins/builds/workspace/WebApp/target/webapp.war /usr/share/tomcat8/webapps
+
+
+------SSH------------
+-------
+ssh-copy-id -i id_rsa.pub ubuntu@ec2-54-175-160-104.compute-1.amazonaws.com
+ssh-copy-id -i $HOME/.ssh/id_rsa.pub ubuntu@ec2-54-175-160-104.compute-1.amazonaws.com
+scp home/ubuntu/.ssh/id_rsa.pub ubuntu@ec2-54-175-160-104.compute-1.amazonaws.com:~/.ssh/authorized_keys
+scp $HOME/ubuntu/.ssh/id_rsa.pub ubuntu@ec2-54-175-160-104.compute-1.amazonaws.com:~/.ssh/authorized_keys
+
+
+---------AWS----------
+For a VM create a new protocol to allow incoming traffic for web service e.g
+Goto Security Groups > Click Inbound > Edit 
+Type: http; protocol: TCP; Port Range: 80
+
+
+-------DOCKER----------
+
+
+
+
+-----------SELENIUM GRID ---------------------------
+
+

@@ -1,0 +1,442 @@
+***********************INSTALL DOCKER On CENTOS***********************
+
+
+sudo yum install -y docker
+sudo nohup docker daemon -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock &
+
+sudo yum check-update
+Now run this command. It will add the official Docker repository, download the latest version of Docker, and install it:
+
+curl -fsSL https://get.docker.com/ | sh
+After installation has completed, start the Docker daemon:
+
+sudo systemctl start docker
+Verify that it's running:
+
+sudo systemctl status docker
+The output should be similar to the following, showing that the service is active and running:
+
+Output
+docker.service - Docker Application Container Engine
+   Loaded: loaded (/lib/systemd/system/docker.service; enabled; vendor preset: enabled)
+   Active: active (running) since Sun 2016-05-01 06:53:52 CDT; 1 weeks 3 days ago
+     Docs: https://docs.docker.com
+ Main PID: 749 (docker)
+Lastly, make sure it starts at every server reboot:
+
+sudo systemctl enable docker
+Installing Docker now gives you not just the Docker service (daemon) but also the docker command line utility, or the Docker client. We'll explore how to use the docker command later in this tutorial.
+
+Step 2 — Executing Docker Command Without Sudo (Optional)
+By default, running the docker command requires root privileges — that is, you have to prefix the command with sudo. It can also be run by a user in the docker group, which is automatically created during the installation of Docker. If you attempt to run the docker command without prefixing it with sudo or without being in the docker group, you'll get an output like this:
+
+Output
+docker: Cannot connect to the Docker daemon. Is the docker daemon running on this host?.
+See 'docker run --help'.
+If you want to avoid typing sudo whenever you run the docker command, add your username to the docker group:
+
+sudo usermod -aG docker $(whoami)
+You will need to log out of the Droplet and back in as the same user to enable this change.
+
+If you need to add a user to the docker group that you're not logged in as, declare that username explicitly using:
+
+sudo usermod -aG docker username
+
+
+Remove Docker
+
+$ sudo yum remove docker \
+                  docker-common \
+                  container-selinux \
+                  docker-selinux \
+                  docker-engine \
+                  docker-engine-selinux 
+
+
+******************************************************
+
+
+
+
+The ENTRYPOINT specifies a command that will always be executed when the container starts. The CMD specifies arguments that will be fed to the ENTRYPOINT.
+If you want to make an image dedicated to a specific command you will use ENTRYPOINT ["/path/dedicated_command"]
+Otherwise, if you want to make an image for general purpose, you can leave ENTRYPOINT unspecified and use CMD ["/path/dedicated_command"] as you will be able to override the setting by supplying arguments to docker run.
+For example, if your Dockerfile is:
+
+FROM debian:wheezy
+ENTRYPOINT ["/bin/ping"]
+CMD ["localhost"]
+
+Running the image without any argument will ping the localhost:
+$ docker run -it test
+
+Now, running the image with an argument will ping the argument:
+$ docker run -it test google.com
+
+FROM debian:wheezy
+CMD ["/bin/ping", "localhost"]
+
+docker run -it test
+
+
+
+**************Install Docker on Ubuntu*******************
+
+sudo apt-get install docker.io
+
+sudo docker daemon start
+sudo docker daemon enable
+
+Add user to docker group (no need to type sudo)
+Add the docker group if it doesn't already exist:
+sudo groupadd docker
+Add the connected user "${USER}" to the docker group. Change the user name to match your preferred user:
+sudo gpasswd -a jenkins docker
+Restart the Docker daemon:
+sudo service docker restart
+
+
+
+You need to give Jenkins user permissions to use docker, buy adding it to docker group, run
+sudo usermod -a -G docker jenkins
+sudo usermod -a -G sudo jenkins
+ sudo visudo
+
+# install docker:
+$ wget -qO- https://get.docker.com/ | sh
+
+# install docker-compose:
+$ curl -L https://github.com/docker/compose/releases/download/1.2.0/docker-compose-`uname -s`-`uname -m` > $ /usr/local/bin/docker-compose
+$ chmod +x /usr/local/bin/docker-compose
+
+
+
+sudo add-apt-repository "deb https://apt.dockerproject.org/repo/pool/ $(lsb_release -cs) main"
+
+
+To interact with container
+docker run -i -t jenkins-1 /bin/bash
+docker run -t -i ubuntu /bin/bash
+
+docker tag image_id imranawan/nameOfimage
+docker ps - queries the daemon for info on the containers 
+docker run -d ubuntu /bin/sh -c "while true; do echo hello world; sleep 1; done" - runs container in background
+docker stop container_name
+docker rmi imagename
+docker rm --force `docker ps -qa`
+docker rm -fv ID_CONTAINER
+to show all containers
+docker ps -a
+only running containers
+docker ps
+
+docker build -t ouruser/sinatra:v2 .
+
+docker run -it --rm --name my-running-app my-java-app
+
+docker run -d -P training/webapp python app.pya2d038e2e14o
+
+To push the image rename the image to repo/imagename using image id
+$ docker tag 7d9495d03763 maryatdocker/docker-whale:latest
+docker push maryatdocker/docker-whale:latest
+
+go inside a live container
+sudo docker exec -i -t ba693326f4b7 /bin/bash 
+
+
+docker run -it --rm -p 8888:8080 imranawan/tomcat
+
+
+view a process id on port
+sudo lsof -t -i:9001
+
+kill process
+sudo kill -9 processId
+
+jenkins password; 94a00fd930f54bbb96b9ca3bffe0ba30
+
+
+
+Tomcat Docker
+
+FROM ubuntu:latest
+RUN apt-get update && apt-get -y upgrade
+
+RUN apt-get -y install software-properties-common
+RUN add-apt-repository ppa:webupd8team/java
+RUN apt-get -y update
+
+# Accept the license
+RUN echo "oracle-java7-installer shared/accepted-oracle-license-v1-1 boolean true" | debconf-set-selections
+
+RUN apt-get -y install oracle-java7-installer
+
+# Here comes the tomcat installation
+RUN apt-get -y install tomcat7
+RUN echo "JAVA_HOME=/usr/lib/jvm/java-7-oracle" >> /etc/default/tomcat7
+
+# Expose the default tomcat port
+EXPOSE 8080
+
+# Start the tomcat (and leave it hanging)
+CMD service tomcat7 start && tail -f /var/lib/tomcat7/logs/catalina.out
+
+
+BUILD IMAGE
+docker build -t my/tomcat .
+
+RUN IMAGE
+docker run -v /home/imran/workspace/WebApp/target/webapp.war:/var/lib/tomcat7/webapps -p 80:80 imranawan/webserver
+
+docker run -p 80:80 imranawan/webserver
+
+/home/imran/workspace/WebApp/target/webapp.war /var/lib/tomcat7/webapps/
+
+sudo docker kill $(docker ps -q)
+
+web server
+docker run -d -p 8888:8080 --name webserver -v /var/lib/jenkins/jobs/BuildDeployApp/workspace/target/webapp.war:/usr/local/tomcat/webapps/webapp.war imranawan/webserver
+
+
+
+
+
+***********INSTALL DOCKER UBUNTU***********************88
+
+sudo apt-key adv --keyserver hkp://p80.pool.sks-keyservers.net:80 --recv-keys 58118E89F3A912897C070ADBF76221572C52609D
+The next step is to add the Docker repository. From the terminal window, create the new file with the command sudo nano /etc/apt/sources.list.d/docker.list and add the following contents:
+
+deb https://apt.dockerproject.org/repo ubuntu-xenial main
+Save and close that file. Once again, update apt with the command sudo apt-get update.
+
+Install the dependencies
+Before we install Docker, there are a couple of dependencies that must be taken care of—these can all be handled with a single command. Go back to your terminal window and issue the following:
+
+sudo apt-get install linux-image-extra-$(uname -r) linux-image-extra-virtual
+You're ready to install Docker.
+
+SEE: Netflix on containers: Five ways they'll boost our business, from lower costs to higher productivity
+
+Installing, starting, and testing Docker
+Docker can now be installed with a single command. From the terminal, issue the following:
+
+sudo apt-get install docker-engine
+
+When the installation completes, you'll want to add your user to the Docker group with the command:
+
+
+sudo groupadd docker (if docker not exist)
+sudo usermod -aG docker user
+sudo service docker restart
+
+
+
+
+
+
+$ sudo service docker stop
+docker stop/waiting
+
+$ vi /etc/default/docker
+# Docker Upstart and SysVinit configuration file
+
+# Customize location of Docker binary (especially for development testing).
+#DOCKER="/usr/local/bin/docker"
+
+# Use DOCKER_OPTS to modify the daemon startup options.
+DOCKER_OPTS="-H tcp://127.0.0.1:2375"
+
+# If you need Docker to use an HTTP proxy, it can also be specified here.
+#export http_proxy="http://127.0.0.1:3128/"
+
+# This is also a handy place to tweak where Docker's temporary files go.
+#export TMPDIR="/mnt/bigdrive/docker-tmp"
+
+$ sudo service docker start
+$ export DOCKER_HOST=127.0.0.1:2375
+
+$ docker info
+Containers: 3
+Images: 49
+Storage Driver: aufs
+ Root Dir: /var/lib/docker/aufs
+ Dirs: 55
+Execution Driver: native-0.2
+Kernel Version: 3.13.0-40-generic
+Operating System: Ubuntu 14.04.1 LTS
+CPUs: 4
+Total Memory: 7.679 GiB
+Name: thorn
+ID: 2MCI:3YT2:XQ4H:AX24:S7BJ:ADF6:L4JT:EKHM:KOIG:CR7N:FOTS:ZCVS
+
+$ docker version
+Client version: 1.4.1
+Client API version: 1.16
+Go version (client): go1.3.3
+Git commit (client): 5bc2ff8
+OS/Arch (client): linux/amd64
+Server version: 1.4.1
+Server API version: 1.16
+Go version (server): go1.3.3
+Git commit (server): 5bc2ff8
+
+sudo service docker stop
+sudo nohup docker daemon -H tcp://127.0.0.1:2375 -H unix:///var/run/docker.sock &
+sudo service docker start
+
+
+DOCKER COMPOSE
+I was getting ERROR: client and server don't have same version (client : 1.19, server: 1.18), then I did export COMPOSE_API_VERSION=1.18 and problem sovled!
+
+
+CMD cd /usr/local/share/
+CMD wget https://storage.googleapis.com/google-code-archive-downloads/v2/code.google.com/phantomjs/phantomjs-1.9.2-linux-x86_64.tar.bz2
+CMD tar jxvf phantomjs-1.8.1-linux-x86_64.tar.bz2
+CMD ln -s /usr/local/share/phantomjs-1.8.1-linux-x86_64/ /usr/local/share/phantomjs
+CMD ln -s /usr/local/share/phantomjs/bin/phantomjs /usr/local/bin/phantomjs
+CMD touch prov.sh
+CMD ./prov.sh
+
+
+docker run --name testserver -i -t -v /var/lib/jenkins/jobs/ExecutionAutomationTests/workspace/:/projects/testserver imranawan/testserver
+cd projects/testserver
+
+
+sudo docker exec -i -t ba693326f4b7 /bin/bash
+docker rm --force `docker ps -qa`
+
+export COMPOSE_API_VERSION=1.18
+
+
+Giving non-root access
+
+The docker daemon always runs as the root user, and since Docker version 0.5.2, the docker daemon binds to a Unix socket instead of a TCP port. By default that Unix socket is owned by the user root, and so, by default, you can access it with sudo.
+
+Starting in version 0.5.3, if you (or your Docker installer) create a Unix group called docker and add users to it, then the docker daemon will make the ownership of the Unix socket read/writable by the docker group when the daemon starts. The docker daemon must always run as the root user, but if you run the docker client as a user in the docker group then you don't need to add sudo to all the client commands. As of 0.9.0, you can specify that a group other than docker should own the Unix socket with the -G option.
+
+Warning: The docker group (or the group specified with -G) is root-equivalent; see Docker Daemon Attack Surface details.
+
+Example:
+Add the docker group if it doesn't already exist:
+sudo groupadd docker
+Add the connected user "${USER}" to the docker group. Change the user name to match your preferred user:
+sudo gpasswd -a ${USER} docker
+Restart the Docker daemon:
+sudo service docker restart
+If you are on Ubuntu 14.04-15.10* use docker.io instead:
+sudo service docker.io restart
+
+Jenkins Build / Deploy Job
+docker build -t imranawan/webserver $WORKSPACE
+docker run -d -p 8888:8080 --name webserver -v /var/lib/jenkins/jobs/BuildDeployApp/workspace/target/webapp.war:/usr/local/tomcat/webapps/webapp.war imranawan/webserver
+
+
+Jenkins Execute Aut Tests Job
+docker build -t imranawan/testserver $WORKSPACE
+docker run --name testserver -i -v /var/lib/jenkins/jobs/ExecuteAutomationTests/workspace/:/projects/testserver imranawan/testserver /bin/sh /projects/testserver/run_automation.sh
+docker rm -f testserver
+docker rm -f webserver
+docker rmi imranawan/webserver
+docker rmi imranawan/testserver
+
+
+docker run -d -p 8888:8080 --name webserver imranawan/webserver
+
+
+docker exec mobydock_postgres_1 createdb -U postgres mobydock
+docker exec mobydock_postgres_1 psql U postgres -c "CREATE USER mobydock WITH PASSWORD 'yourpassword'; GRANT ALL PRIVILEGES ON DATABASE mobydock to mobydock;"
+
+
+
+*********DOCKER SWARM********
+
+(1) Install docker machine:
+
+curl -L https://github.com/docker/machine/releases/download/v0.9.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine &&
+  chmod +x /tmp/docker-machine &&
+  sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+
+  docker-machine version
+  docker-machine ls
+
+  (2) Create a VM called local
+  docker-machine create -d virtualbox local
+
+  (3) Load the local machine configuration into your shell.
+      eval "$(docker-machine env local)"
+
+  (4) Generate a discovery token using the Docker Swarm image.
+   The command below runs the swarm create command in a container. If you haven’t got the swarm:latest image on your local machine, Docker pulls it for you.
+
+(5)   docker run swarm create
+
+The swarm create command returned the fe0cc96a72cf04dba8c1c4aa79536ec3 token. Note: This command relies on Docker Swarm’s hosted discovery service. If this service is having issues, this command may fail. In this case, see information on using other types of discovery backends. Check the status page for service availability.
+Save the token in a safe place.
+You’ll use this token in the next step to create a Docker Swarm.
+
+bdc984d86935b5f0f7d0d55c9246e356
+
+
+A single system in your network is known as your Docker Swarm manager. The swarm manager orchestrates and schedules containers on the entire cluster. The swarm manager rules a set of agents (also called nodes or Docker nodes).
+Swarm agents are responsible for hosting containers. They are regular docker daemons and you can communicate with them using the Docker Engine API.
+In this section, you create a swarm manager and two nodes.
+
+(6) Create a swarm manager under VirtualBox.
+docker-machine create -d virtualbox --swarm --swarm-master --swarm-discovery token://bdc984d86935b5f0f7d0d55c9246e356 swarm-master
+
+(7) Create 2 swarm-nodes
+docker-machine create -d virtualbox --swarm --swarm-discovery token://bdc984d86935b5f0f7d0d55c9246e356 swarm-agent-00
+docker-machine create -d virtualbox --swarm --swarm-discovery token://bdc984d86935b5f0f7d0d55c9246e356 swarm-agent-01
+
+Direct your swarm.
+
+(8) Point your Docker environment to the machine running the swarm master.
+$ eval $(docker-machine env --swarm swarm-master)
+
+docker info
+
+
+(9) Check the images currently running on your swarm.
+$ docker ps  -a
+
+(10) Run the Docker hello-world test image on your swarm.
+$ docker run hello-world
+
+
+https://github.com/rafabene/devops-demo/master/swarm/swarm-create-aws.sh
+
+export AWS_ACCESS_KEY_ID=AKIAIEGZI4TVHBH3SZLA
+export AWS_SECRET_ACCESS_ID=8jbci2YNZXsRrZAX8v7PjhZyKHQPz/T2qHbzdCW+
+export AWS_VPC_ID=vpc-2915d740
+
+
+
+
+
+
+Running Docker via Jenkins
+
+goals, clean, intall, test
+
+DeployApp Job
+
+docker rm -f webserver
+docker build -t imranawan/webserver $WORKSPACE
+docker run -d -p 8888:8080 --name webserver -v /var/lib/jenkins/workspace/BuildDeployApp/target/webapp.war:/usr/local/tomcat/webapps/webapp.war imranawan/webserver
+
+
+junit report path
+target/surefire-reports\*.xml
+
+Automation Job
+
+docker build -t imranawan/testserver $WORKSPACE
+docker run --name testserver -i -v /var/lib/jenkins/workspace/ExecuteAutomationTests:project/tests
+docker rm -f webserver
+
+
+
+docker run -d -p 80:80 --name php-server -v /home/projects/php/myapp/build:/var/www/html imranawan/php-apache
+docker run -d -p 80:80 --name php-server -v /home/Dockerfiles/php-server/src:/var/www/html imranawan/php-apache
+
+

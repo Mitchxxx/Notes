@@ -1,0 +1,250 @@
+
+
+
+
+
+
+
+
+
+
+ansible -i dev --list-hosts all
+ansible -i dev --list-hosts "*"
+ansible -i dev --list-hosts loadbalancer
+ 
+ansible -i dev --list-hosts "ap*
+
+
+ 
+the precedence order that ansible follows is to first look at the ansible host to see if its not provided any other inventory info.
+Set by the global ansible config
+
+sudo vi /etc/ansible/ansible.cfg
+
+we can override this config by putting a file in the local directory so don't have to keep specifing the host name file
+
+vi ansible.cfg
+[defaults]
+inventory = ./dev
+
+now we just do
+ansible --list-hosts all
+ansible --list-hosts "*"
+ansible --list-hosts db01
+ansible --list-hosts database:control
+ansible --list-hosts webserver[0]
+ansible --list-hosts\!control  (negation, everything not in the control group)
+
+tasks (2 parts) - modules and arguments
+ansible -m ping all
+ansible -m command -a "hostname" all 
+
+command is default module for ansible. So could also 
+ansible -a "hostname" all 
+
+To run a playbook
+ansible-playbook playbooks/hostname.yml 
+
+
+
+
+User writes playbooks
+playbooks writeen in yaml, which invoke modules in things called tasks. 
+Executed seq. essentially bits of code target to the underlying machines. 
+
+modules used to act against inventory which has hosts. 
+
+push playbooks that uses modules
+
+various python api which ansible users can use to extending ansible connection types. 
+
+
+
+MODULES: RUN COMMANDS
+
+command: takes the command and executes it. The most secure and predictable.
+shell: Executes through a shell like /bin/sh so you can use pipes.
+script: runs a local script on a remote node after transferring it.
+raw: executes a command without going through the Ansible module system (ssh command)
+
+AD-HOC COMMANDS
+
+#check all my inventory hosts are ready to be managed by ansible
+ansible all -m ping 
+
+# run the uptime command on all hosts in the web group
+ansible web -m command -a "uptime"
+
+#collect and display the discovered for the local host
+ansible localhost -m setup
+
+
+
+example ping to all machines
+
+ansible all -i hosts -u vagrant -m ping
+
+to apply to a group webserver only
+
+ansible webservers -i hosts -u vagrant -m yum -a "name=httpd state=present" -b 
+
+this will install apache
+
+- m (module)
+- a (arguments)
+- b execute as root
+
+idempotent - will not install apache twice, if you run the same command again
+
+Roll back (un-install apache)
+ansible webservers -i hosts -u vagrant -m yum -a "name=httpd state=absent" -b 
+
+
+VARIABLES 
+
+Used to account for differences between servers
+define variables in host files.
+
+
+PRECEDENCE
+Order in which the same variables will override each other.
+
+
+For example in host file we specify the variables Inventory host_vars and group_vars, which are both 13, 14
+
+all variables specified above position 13 and 14 will override these
+
+
+TASKS
+
+Example
+
+tasks: 
+  - name: add cache dir
+    file: 
+      path: /opt/cache
+      state: directory
+
+  - name: install nginx
+    yum: 
+        name: nginx
+        state: latest
+
+  - name: restart nginx
+    service: 
+       name: nginx
+       state: restarted
+
+HANDLER TASKS (special type of task)
+
+Specific tasks that run at the end of a play if notified by another task.
+if a configuration file gets changed notify a service restart task it needs to run.
+
+Example: 
+
+tasks: 
+  - name: add cache dir
+    file: 
+      path: /opt/cache
+      state: directory
+
+  - name: install nginx
+    yum: 
+        name: nginx
+        state: latest
+        notify: restart nginx #when a change is recognised the notify will execute the handler task to restart nginx (once)
+
+handlers:
+  - name: restart nginx
+    service: 
+       name: nginx
+       state: restarted
+
+
+PLAYS & PLAYBOOK 
+
+Plays are ordered sets of tasks to execute against host selections from your inventory. 
+A playbook is a file containing one or more plays
+
+
+PLAYBOOK (1 play)
+
+ - name: install and start apache
+   hosts: web
+   vars:
+        http_port: 80
+        max_clients: 200
+        remote_user: root
+
+   tasks:
+      - name: install httpd
+        yum: pkg=httpd state=latest
+  
+      - name: write the apache config file
+        template: src=/srv/httpd.j2 dest=/etc/httpd.conf
+      
+      - name: start httpd
+        service: name=httpd state=started
+
+
+To run a playbook
+
+ansible-playbook -i hosts site.yml
+
+
+ROLES
+
+Roles are pre-defined directory structure to put individual pieces of our playbook into, to make it easy to re-use and share.
+
+tasks become roles. So you specify roles not tasks if you want to re-use the task in another playbook
+
+
+
+Struture:
+
+---
+- hosts: webserver
+  user: root
+  tasks:
+    - name: run echo command
+      file: path=/home/testingdir state=directory
+
+
+
+The way handlers work is that a task can be told to notify a handler when it has changed, and the handler only runs when the task has been changed.
+
+
+---
+- hosts: apache
+  sudo: yes
+  tasks:
+    - name: install apache2
+      apt: name=apache2 update_cache=yes state=latest
+
+    - name: enabled mod_rewrite
+      apache2_module: name=rewrite state=present
+      notify:
+        - restart apache2
+
+  handlers:
+    - name: restart apache2
+      service: name=apache2 state=restarted
+
+         
+
+playbook to install Apache on centos
+
+https://github.com/ansible/ansible-examples/tree/master/tomcat-standalone
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,6 @@
+
+
+[Warn user about bad openshift_hostname values]
+The hostname "centos-2gb" for "centos-2gb" doesn't resolve to an ip address owned by this host. Please set openshift_hostname variable to a hostname that when resolved on the host in question resolves to an IP address matching an interface on this host. This host will fail liveness checks for pods utilizing hostPorts
+
+

@@ -1,0 +1,11 @@
+
+mvn test -Dsurefire.suiteXmlFiles=testng.xml
+mvn clean install -DskipTests
+
+
+WebElement select = driver.findElement(By.name(x));
+Select dropdown = new Select(select);
+List<WebElement> allOptions = dropdown.getOptions();
+for (WebElement singleOption: allOption) {
+     singleOption.getText();
+}

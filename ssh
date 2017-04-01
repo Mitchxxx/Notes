@@ -1,0 +1,29 @@
+copy content of one file from one server and paste to another 
+cat ~/.ssh/id_rsa.pub | ssh ansible@52.56.143.178 'cat >> .ssh/authorized_keys'
+
+
+scp root@46.101.83.115:/home/projects/php/myapp/build/myapp.phar /home/imran/TestDevProjects/PHP
+
+
+Install ssh on machine
+
+sudo apt-get install ssh 
+
+default port to listen is 22
+
+to connect to machine 
+
+ssh username@ip (will be prompted for password)
+
+to change listening port
+sudo nano /etc/ssh/sshd_config
+
+reload configuration
+sudo service ssh force-reload
+
+
+
+kill -9 1234
+
+
+
