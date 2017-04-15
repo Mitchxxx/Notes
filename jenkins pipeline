@@ -1,0 +1,237 @@
+
+sudo dpkg -l | grep nfs-kernel-server
+
+NAME       ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+manager1   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.04.0-ce   
+worker1    -        virtualbox   Running   tcp://192.168.99.101:2376           v17.04.0-ce   
+worker2    -        virtualbox   Running   tcp://192.168.99.102:2376  
+
+
+
+
+
+ docker swarm join \
+    --token SWMTKN-1-0gwd0sqb4jhagxu75sn3xp2l2in4qcn49uixu9htmro1yzq7b4-dxzdnczt159uqzctjer8yv32x \
+    192.168.99.100:2377
+
+
+docker service create --replicas 5 -p 80:80 --name web nginx
+
+
+docker service create --replicas 2 --detach --hostname gitlab.example.com --publish 443:443 --publish 80:80 --publish 22:22 --name gitlab --restart always --volume /srv/gitlab/config:/etc/gitlab --volume /srv/gitlab/logs:/var/log/gitlab --volume /srv/gitlab/data:/var/opt/gitlab gitlab/gitlab-ce:latest
+
+
+
+docker service create --name nexus-service \
+  --network nexus-network \
+  --network proxy-network \
+  sonatype/nexus3
+
+
+	docker service create --name proxy \
+	    -p 80:80 \
+	    -p 443:443 \
+	    -p 8080:8080 \
+	    --network proxy-network \
+	    -e MODE=swarm \
+	    vfarcic/docker-flow-proxy
+
+
+
+
+docker run -d -p 8081:8081 --name nexus sonatype/nexus3
+
+
+curl "192.168.99.101:8080/v1/docker-flow-proxy/reconfigure?serviceName=nexus-service&servicePath=/&port=8081"
+
+
+
+
+
+docker service create -p 80:80 --replicas 2 --name webserver --mount type=bind,source=$PWD/html,target=/var/www/html imranawan/apache
+
+
+docker exec -it \
+    $(docker ps -q --filter "ancestor=vfarcic/docker-flow-proxy:latest") \
+    cat /cfg/haproxy.cfg
+exit
+
+
+
+listen webfarm 0.0.0.0:80
+    mode http
+    stats enable
+    stats uri /haproxy?stats
+    balance roundrobin
+    option httpclose
+    option forwardfor
+    server webserver01 192.168.99.101:8081 check
+    server webserver02 192.168.99.102:8081 check
+
+
+
+
+
+
+
+
+docker service create --name sonar-service \
+ - v /opt/db/sonarqube/:var/lib/postresql
+ - 
+
+
+
+
+
+
+postgresql:
+  image: orchardup/postgresql:latest
+  environment:
+    - POSTGRESQL_USER=sonar
+    - POSTGRESQL_PASS=xaexohquaetiesoo
+    - POSTGRESQL_DB=sonar
+  volumes:
+    - /opt/db/sonarqube/:/var/lib/postgresql
+  ports:
+    - "5432:5432"
+
+
+
+sonarqube:
+  #image: harbur/sonarqube:latest
+  build: ./
+  dockerfile: Dockerfile
+  links:
+    - postgresql:db
+  environment:
+    - DB_USER=sonar
+    - DB_PASS=xaexohquaetiesoo
+    - DB_NAME=sonar
+  ports:
+    - "9000:9000"
+    - "443"
+
+
+
+
+
+sudo docker run --detach \
+    --hostname gitlab.example.com \
+    --publish 443:443 --publish 80:80 --publish 22:22 \
+    --volume /srv/gitlab/config:/etc/gitlab \
+    --volume /srv/gitlab/logs:/var/log/gitlab \
+    --volume /srv/gitlab/data:/var/opt/gitlab \
+    gitlab/gitlab-ce:latest
+
+
+
+
+
+
+
+
+docker service create --replicas 2 -p 8081:8081 --name nexus sonatype/nexus
+
+
+docker service create --replicas 2 -p 8081:8081 --name nexus --mount \
+type=volume,volume-opt=o=addr=172.18.0.1,volume-opt=device=:/var/nfs,volume-opt=type=nfs,source=vol_collab,target=/mount sonatype/nexus
+
+
+
+docker service create --replicas 2 -p 8081:8081 --name nexus -v mynfs:/nfsdata sonatype/nexus
+
+docker service create --replicas 2 --name nexus --mount type=bind,source='pwd'/nfsdata,target=/nfsdata -p 8081:8081 sonatype/nexus
+
+
+docker service create --replicas 2 -p 8081:8081 --name nexus --mount type=volume,target=/nfsdata,source=/nfsdata,volume-driver=nfs sonatype/nexus
+docker service create --replicas 2 -p 8081:8081 --name nexus --mount target=/nfsdata,source=/nfsdata,type=volume,writable=true
+
+docker service create --replicas 2 -p 8081:8081 --name nexus --mount type=volume,target=/nfsdata,source=/nfsdata,volume-driver=local,volume-driver-opt=type=nfs,volume-driver-opt=device=nfs-server:/nfsServer sonatype/nexus 
+
+
+docker run -it -v mynfs:/foo alpine sh
+
+
+docker service create --replicas 2 -p 8081:8081 -v nexus-data:/nexus-data --name nexus sonatype/nexus
+
+
+
+docker volume create \
+    --name mynfs \
+    --opt type=nfs \
+    --opt device=:nfsdata \
+    --opt o=addr=192.168.99.100 \
+    mynfs
+
+
+
+Sample jenkins file
+
+https://gitlab.alm.gsnetcloud.corp/serenity-alm ß Madrid ALM Repo
+https://gitlab.alm.gsnetcloud.corp/ALM-Hyperloop ß Collaboration between uk-spain (fork, only one branch and continuous integration)
+https://gitlab.alm.gsnetcloud.corp/firefly-backend/fake-bks/tree/pipeline ß pipeline with the library (example)
+ 
+https://jenkins.io/doc/book/pipeline/jenkinsfile/
+https://jenkins.io/doc/pipeline/steps/
+https://wiki.jenkins-ci.org/display/JENKINS/Docker+Plugin
+ 
+ 
+#!groovy
+ 
+import com.serenity.alm.jenkins.library.maven.*
+import com.serenity.alm.jenkins.library.git.*
+import com.serenity.alm.jenkins.library.ose.*
+import com.serenity.alm.jenkins.library.utils.*
+ 
+def maven = new Maven(this)
+def git = new Git(this)
+def ose = new Openshift(this)
+ 
+def artifactUrl
+ 
+node("maven") {
+  stage("Build") {
+      git.clone {
+       branch = "pipeline"
+      }
+     
+      maven.build {
+        goal = "clean compile"
+      }
+     
+      stash("myworkspace")
+  }
+ 
+  stage("UnitTests") {
+      maven.test()
+  }
+ 
+  stage("Upload to Nexus") {
+      artifactUrl = maven.upload()
+ }
+   
+}
+ 	
+node("ose3-deploy") {
+   stage("Deploy Dev") {
+      unstash("myworkspace")
+      ose.deploy("application.yml", "development", [
+        ARTIFACT_URL: artifactUrl
+      ])
+    }
+}
+
+
+
+# /etc/exports: the access control list for filesystems which may be exported
+#               to NFS clients.  See exports(5).
+#
+# Example for NFSv2 and NFSv3:
+# /srv/homes       hostname1(rw,sync,no_subtree_check) hostname2(ro,sync,no_subtree_check)
+#
+# Example for NFSv4:
+# /srv/nfs4        gss/krb5i(rw,sync,fsid=0,crossmnt,no_subtree_check)
+# /srv/nfs4/homes  gss/krb5i(rw,sync,no_subtree_check)
+#
+/var/nfs    *(rw,sync,no_subtree_check)
+~                                          

@@ -6,7 +6,6 @@ ansible -i dev --list-hosts loadbalancer
  
 ansible -i dev --list-hosts "ap*
 
-
  
 the precedence order that ansible follows is to first look at the ansible host to see if its not provided any other inventory info.
 Set by the global ansible config

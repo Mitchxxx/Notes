@@ -1,3 +1,7 @@
+$ sudo systemctl daemon-reload
+$ sudo systemctl restart docker
+
+
 ***********************INSTALL DOCKER On CENTOS***********************
 
 
@@ -243,9 +247,9 @@ $ vi /etc/default/docker
 # Customize location of Docker binary (especially for development testing).
 #DOCKER="/usr/local/bin/docker"
 
-# Use DOCKER_OPTS to modify the daemon startup options.
+#Use DOCKER_OPTS to modify the daemon startup options.
 DOCKER_OPTS="-H tcp://127.0.0.1:2375"
-
+  
 # If you need Docker to use an HTTP proxy, it can also be specified here.
 #export http_proxy="http://127.0.0.1:3128/"
 
@@ -353,8 +357,8 @@ docker exec mobydock_postgres_1 psql U postgres -c "CREATE USER mobydock WITH PA
 (1) Install docker machine:
 
 curl -L https://github.com/docker/machine/releases/download/v0.9.0/docker-machine-`uname -s`-`uname -m` >/tmp/docker-machine &&
-  chmod +x /tmp/docker-machine &&
-  sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
+chmod +x /tmp/docker-machine &&
+sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
 
   docker-machine version
   docker-machine ls
@@ -374,19 +378,22 @@ The swarm create command returned the fe0cc96a72cf04dba8c1c4aa79536ec3 token. No
 Save the token in a safe place.
 You’ll use this token in the next step to create a Docker Swarm.
 
-bdc984d86935b5f0f7d0d55c9246e356
+815fc8fd4617d866e1256999c2c0a55cc8f377f3dade26c3edde3f0543a70c04
 
 
 A single system in your network is known as your Docker Swarm manager. The swarm manager orchestrates and schedules containers on the entire cluster. The swarm manager rules a set of agents (also called nodes or Docker nodes).
 Swarm agents are responsible for hosting containers. They are regular docker daemons and you can communicate with them using the Docker Engine API.
 In this section, you create a swarm manager and two nodes.
 
+
+815fc8fd4617d866e1256999c2c0a55cc8f377f3dade26c3edde3f0543a70c04
+
 (6) Create a swarm manager under VirtualBox.
-docker-machine create -d virtualbox --swarm --swarm-master --swarm-discovery token://bdc984d86935b5f0f7d0d55c9246e356 swarm-master
+docker-machine create -d virtualbox --swarm --swarm-master --swarm-discovery token://815fc8fd4617d866e1256999c2c0a55cc8f377f3dade26c3edde3f0543a70c04 swarm-master
 
 (7) Create 2 swarm-nodes
-docker-machine create -d virtualbox --swarm --swarm-discovery token://bdc984d86935b5f0f7d0d55c9246e356 swarm-agent-00
-docker-machine create -d virtualbox --swarm --swarm-discovery token://bdc984d86935b5f0f7d0d55c9246e356 swarm-agent-01
+docker-machine create -d virtualbox --swarm --swarm-discovery token://815fc8fd4617d866e1256999c2c0a55cc8f377f3dade26c3edde3f0543a70c04 swarm-agent-00
+docker-machine create -d virtualbox --swarm --swarm-discovery token://815fc8fd4617d866e1256999c2c0a55cc8f377f3dade26c3edde3f0543a70c04 swarm-agent-01
 
 Direct your swarm.
 
@@ -411,9 +418,6 @@ export AWS_VPC_ID=vpc-2915d740
 
 
 
-
-
-
 Running Docker via Jenkins
 
 goals, clean, intall, test
@@ -423,7 +427,6 @@ DeployApp Job
 docker rm -f webserver
 docker build -t imranawan/webserver $WORKSPACE
 docker run -d -p 8888:8080 --name webserver -v /var/lib/jenkins/workspace/BuildDeployApp/target/webapp.war:/usr/local/tomcat/webapps/webapp.war imranawan/webserver
-
 
 junit report path
 target/surefire-reports\*.xml
@@ -435,8 +438,15 @@ docker run --name testserver -i -v /var/lib/jenkins/workspace/ExecuteAutomationT
 docker rm -f webserver
 
 
-
 docker run -d -p 80:80 --name php-server -v /home/projects/php/myapp/build:/var/www/html imranawan/php-apache
 docker run -d -p 80:80 --name php-server -v /home/Dockerfiles/php-server/src:/var/www/html imranawan/php-apache
 
 
+mvn test -Dsurefire.suiteXmlFiles=testng.xml
+
+
+  
+https://s3.eu-west-2.amazonaws.com/imranawan/webapp.war
+
+
+tcp://192.168.99.100:2376 

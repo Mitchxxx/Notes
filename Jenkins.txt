@@ -190,9 +190,15 @@ Then I restarted jenkins and I was able to perform docker commands as jenkins us
 sudo service jenkins restart
 
 
+When you run jenkins in a docker container then, these are few things you should check -
+
+start the container:
 
 
-
-
+run -d -p 8080:8080 -p 50000:50000 --name
+   jenkins-master -v /var/run/docker.sock:/var/run/docker.sock -v
+   $(which docker):$(which docker) jenkins-master-img:latest
+Permission of /var/run/docker.sock set correctly
+Check the docker plugin version installed, with jenkins version 2.32.2 docker plugin version 0.16.2 throws exception unix protocol is not supported however, I tested with jenkins version 2.32.2, and docker plugin version 0.16.1 it works just fine.
 
 
