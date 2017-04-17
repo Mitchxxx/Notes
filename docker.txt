@@ -1,5 +1,14 @@
+<<<<<<< HEAD
+**************INSTALL ON RHEL*********
+
+ curl -sSL https://get.docker.com/ | sh
+ systemctl enable docker
+systemctl start docker
+
+=======
 $ sudo systemctl daemon-reload
 $ sudo systemctl restart docker
+>>>>>>> 6162f64f9a5077dabd9bdd15b51d29cfdfbf1d69
 
 
 ***********************INSTALL DOCKER On CENTOS***********************
@@ -233,7 +242,7 @@ sudo groupadd docker (if docker not exist)
 sudo usermod -aG docker user
 sudo service docker restart
 
-
+docker commit c3f279d17e0a  svendowideit/testimage:version3
 
 
 
