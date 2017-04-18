@@ -8,18 +8,15 @@ curl -L https://github.com/docker/machine/releases/download/v0.10.0/docker-machi
 
 
 
-
-NAME        ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
-aws-mgr01   -        amazonec2    Running   tcp://54.77.85.121:2376             v17.04.0-ce   
-aws-wrk01   -        amazonec2    Running   tcp://52.50.51.207:2376             v17.04.0-ce   
-manager1    -        virtualbox   Running   tcp://192.168.99.100:2376           v17.04.0-ce   
-manager2    -        virtualbox   Running   tcp://192.168.99.105:2376           v17.04.0-ce   
-worker1     -        virtualbox   Running   tcp://192.168.99.101:2376           v17.04.0-ce   
-worker2     -        virtualbox   Running   tcp://192.168.99.102:2376           v17.04.0-ce   
-worker3     -        virtualbox   Running   tcp://192.168.99.103:2376           v17.04.0-ce   
-worker4     -        virtualbox   Running   tcp://192.168.99.104:2376           v17.04.0-ce   
-worker5     -        virtualbox   Running   tcp://192.168.99.106:2376           v17.04.0-ce 
-aws-mgr02   -        amazonec2    Running   tcp://54.76.149.47:2376 
+NAME       ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+manager1   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.04.0-ce   
+manager2   -        virtualbox   Running   tcp://192.168.99.105:2376           v17.04.0-ce   
+manager3   -        virtualbox   Running   tcp://192.168.99.103:2376           v17.04.0-ce   
+worker2    -        virtualbox   Stopped                                       Unknown       
+worker3    -        virtualbox   Stopped                                       Unknown       
+worker4    -        virtualbox   Running   tcp://192.168.99.102:2376           Unknown       Unable to query docker version: Get https://192.168.99.102:2376/v1.15/version: x509: certificate is valid for 192.168.99.104, not 192.168.99.102
+worker5    -        virtualbox   Stopped                                       Unknown       
+worker6    -        virtualbox   Running   tcp://192.168.99.104:2376           v17.04.0-ce    
 
 
 docker-machine create --driver virtualbox manager1
@@ -27,14 +24,13 @@ docker-machine create --driver virtualbox manager1
 docker-machine ip manager1
 docker-machine ssh <machine-name>
 
- docker swarm init --advertise-addr 127.0.0.1
+ docker swarm init --advertise-addr 192.168.99.103
 
 
-AWS 
+   docker swarm join \
+    --token SWMTKN-1-0w33jb17xlx4oa0tyyzsw5jmohmte697tq9lefqrs6o797dif9-e561vho6ildmke065kug272nz \
+    192.168.99.103:2377
 
-     docker swarm join --token SWMTKN-1-5yhonqza1vxiwrpj0zaakt8u0kgvrcul6rk8qpf3fgm9ez45nb-1vq06fnux1qweqvg0wpb5xbtj 54.76.149.47:2377
-
- docker node ls
 
 
  docker service create --replicas 5 -p 80:80 --name web nginx
@@ -93,7 +89,7 @@ docker service create --name jira-service \
 
 docker run --detach --publish 8080:8080 cptactionhank/atlassian-jira:latest
 
-docker service create --name proxy -p 80:80 -p 443:443 -p 8080:8080 --network proxy-network -e MODE=swarm vfarcic/docker-flow-proxy
+docker service create --name proxy-service -p 80:80 -p 443:443 -p 8080:8080 --network proxy-network -e MODE=swarm vfarcic/docker-flow-proxy
 
 
 docker service create --name nexus-service -p 8081:8081 sonatype/nexus3
@@ -101,8 +97,29 @@ docker service create --name nexus-service -p 8081:8081 sonatype/nexus3
 
 curl "54.77.85.121:8080/v1/docker-flow-proxy/reconfigure?serviceName=nexus-service&servicePath=/&port=8081"
 
-curl "192.168.99.100:8080/v1/docker-flow-proxy/reconfigure?serviceName=nexus-service&servicePath=/&port=8081"
+curl "192.168.99.104:8080/v1/docker-flow-proxy/reconfigure?serviceName=jenkins-service&servicePath=/jenkins&port=8080"
 curl "192.168.99.100:8080/v1/docker-flow-proxy/reconfigure?serviceName=jira-service&servicePath=/&port=8080"
+x
+
+
+    docker service create --name jenkins-service \
+    -p 8082:8080 \
+    -p 50000:50000 \
+    -e JENKINS_OPTS="--prefix=/jenkins" \
+    --mount "type=bind,source=$PWD/jenkins,target=/var/jenkins_home" \
+    --reserve-memory 300m \
+    jenkins:2.7.4-alpine
+
+
+    docker service create --name jenkins-service \
+    --network proxy-network \
+    -e JENKINS_OPTS="--prefix=/jenkins" \
+    --mount "type=bind,source=$PWD/jenkins,target=/var/jenkins_home" \
+    --reserve-memory 300m \
+    jenkins:2.7.4-alpine
+
+
+docker service create --name proxy-service -p 80:80 -p 443:443 -p 8080:8080 --network proxy-network -e MODE=swarm vfarcic/docker-flow-proxy
 
 
 
