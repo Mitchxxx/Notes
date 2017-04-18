@@ -121,6 +121,7 @@ x
 
 docker service create --name proxy-service -p 80:80 -p 443:443 -p 8080:8080 --network proxy-network -e MODE=swarm vfarcic/docker-flow-proxy
 
+ curl "192.168.99.104:8080/v1/docker-flow-proxy/reconfigure?serviceName=jenkins-service&servicePath=/jenkins&port=8080"
 
 
 
