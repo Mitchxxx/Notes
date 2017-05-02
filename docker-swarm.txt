@@ -22,6 +22,16 @@ worker3    -        virtualbox   Stopped                                       U
 worker4    -        virtualbox   Running   tcp://192.168.99.102:2376           Unknown       Unable to query docker version: Get https://192.168.99.102:2376/v1.15/version: x509: certificate is valid for 192.168.99.104, not 192.168.99.102
 worker5    -        virtualbox   Stopped                                       Unknown       
 worker6    -        virtualbox   Running   tcp://192.168.99.104:2376           v17.04.0-ce    
+NAME       ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
+manager1   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.04.0-ce   
+manager2   -        virtualbox   Stopped                                       Unknown       
+manager3   -        virtualbox   Stopped                                       Unknown       
+worker2    -        virtualbox   Running   tcp://192.168.99.101:2376           Unknown       Unable to query docker version: Get https://192.168.99.101:2376/v1.15/version: x509: certificate is valid for 192.168.99.102, not 192.168.99.101
+worker3    -        virtualbox   Running   tcp://192.168.99.102:2376           Unknown       Unable to query docker version: Get https://192.168.99.102:2376/v1.15/version: x509: certificate is valid for 192.168.99.103, not 192.168.99.102
+worker4    -        virtualbox   Running   tcp://192.168.99.103:2376           Unknown       Unable to query docker version: Get https://192.168.99.103:2376/v1.15/version: x509: certificate is valid for 192.168.99.104, not 192.168.99.103
+worker5    -        virtualbox   Running   tcp://192.168.99.104:2376           Unknown       Unable to query docker version: Get https://192.168.99.104:2376/v1.15/version: x509: certificate is valid for 192.168.99.106, not 192.168.99.104
+worker6    -        virtualbox   Stopped                                       Unknown       
+
 
 
 docker-machine create --driver virtualbox manager1
@@ -40,7 +50,7 @@ docker-machine ssh <machine-name>
 
  docker service create --replicas 5 -p 80:80 --name web nginx
  docker service ps web
- docker service scale nexus-service=3
+ docker service scale jenkins-service=2
 
 shut down a worker node
 docker-machine rm -f worker1
@@ -70,8 +80,7 @@ eval $(docker-machine env manager1)
 docker network create --driver overlay proxy-network
 docker network create --driver overlay nexus-network
 docker network create --driver overlay jira-network
-
-
+docker network create --driver bridge webgateway
 
 docker run -d -p 8081:8081 --name nexus -v /home/imran/TestDevProjects/Docker/nexus/lib:/opt/sonatype/nexus/lib sonatype/nexus3
 docker run -d -p 8081:8081 --name nexus  sonatype/nexus3
@@ -85,10 +94,8 @@ docker service create --name nexus-service \
 
 
 
-docker service create --name jira-service \
-  --network jira-network \
-  --network proxy-network \
-  cptactionhank/atlassian-jira:latest
+
+
 
 
 
@@ -103,41 +110,196 @@ docker service create --name nexus-service -p 8081:8081 sonatype/nexus3
 curl "54.77.85.121:8080/v1/docker-flow-proxy/reconfigure?serviceName=nexus-service&servicePath=/&port=8081"
 
 curl "192.168.99.104:8080/v1/docker-flow-proxy/reconfigure?serviceName=jenkins-service&servicePath=/jenkins&port=8080"
-curl "192.168.99.100:8080/v1/docker-flow-proxy/reconfigure?serviceName=jira-service&servicePath=/&port=8080"
-x
 
 
-    docker service create --name jenkins-service \
-    -p 8082:8080 \
-    -p 50000:50000 \
-    -e JENKINS_OPTS="--prefix=/jenkins" \
-    --mount "type=bind,source=$PWD/jenkins,target=/var/jenkins_home" \
-    --reserve-memory 300m \
-    jenkins:2.7.4-alpine
+docker service create --name swarm-listener \
+--network proxy-network \
+--constraint 'node.role==manager' \
+--mount "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock" \
+-e DF_NOTIFY_CREATE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/reconfigure \
+-e DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove --constraint 'node.role==manager' \
+vfarcic/docker-flow-swarm-listener
+
+
+docker service update \
+    --env-add DF_NOTIFY_CREATE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/reconfigure,http://192.168.99.101:8081/nexus \
+    --env-add DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove,http://192.168.99.101:8081/nexus \
+    swarm-listener
+
+
+
+docker service update \
+    --env-add DF_NOTIFY_CREATE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/reconfigure,http://192.168.99.101:8888/jenkins \
+    --env-add DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove,http://192.168.99.101:8888/jenkins \
+    swarm-listener
+
+
+    docker service update \
+    --env-add DF_NOTIFY_CREATE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/reconfigure,http://192.168.99.101:8080/jira \
+    --env-add DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove,http://192.168.99.101:8080/jira \
+    swarm-listener
+
 
 
     docker service create --name jenkins-service \
     --network proxy-network \
-    -e JENKINS_OPTS="--prefix=/jenkins" \
-    --mount "type=bind,source=$PWD/jenkins,target=/var/jenkins_home" \
-    --reserve-memory 300m \
-    jenkins:2.7.4-alpine
+    -p 50000:50000 \
+    -p 8888:8080 \
+    --label com.df.notify=true \
+    --label com.df.servicePath=/jenkins \
+    --label com.df.port=8888 \
+     jenkins:2.7.4-alpine
+docker node update --label-add bar=baz worker1
+
+docker service create --name nexus-service \
+  -p 8081:8081 \
+  --network proxy-network \
+  --label com.df.notify=true \
+  --label com.df.servicePath=/nexus \
+  --label com.df.port=8081 \
+  sonatype/nexus3
 
 
-docker service create --name proxy-service -p 80:80 -p 443:443 -p 8080:8080 --network proxy-network -e MODE=swarm vfarcic/docker-flow-proxy
+docker service create -name whoami0 \
+    --label traefik.port=80 \
+    --network traefik-net \
+    emilevauge/whoami"
 
- curl "192.168.99.104:8080/v1/docker-flow-proxy/reconfigure?serviceName=jenkins-service&servicePath=/jenkins&port=8080"
 
+
+    docker service create --name jira-service \
+    --label traefik.port=8080 \
+    --network proxy-network \
+    cptactionhank/atlassian-jira:latest
 
 
 docker service create --name nexus-service \
-  --network nexus-network \
-  --network proxy \
-  --label com.df.notify=true \
-  --label com.df.distribute=true \
-  --label com.df.servicePath=/nexus-demo \
-  --label com.df.port=8081 \
+  -p 8081:8081 \
+  --network proxy-network \
+  --label traefik.port=8080 \
+  --label traefik.frontend.rule="Host:nexus.imran.com"\
   sonatype/nexus3
+
+
+
+      traefik.port: 80
+        traefik.frontend.rule="Host:booksfordevops.com,www.booksfordevop.com"
+
+
+
+curl -H Host:nexus.imran.co.uk http://192.168.99.101
+
+
+docker service create --name proxy-service \
+    --constraint=node.role==manager \
+    --publish 80:80 --publish 8080:8080 \
+    --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+   --network proxy-network \
+    traefik \
+    --docker \
+    --docker.swarmmode \
+    --docker.domain=traefik \
+    --docker.watch \
+    --web"
+
+
+   docker service create --name proxy-service \
+   -p 8080:8080 \
+   -p 80:80 \
+   --mount "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+   --mount "type=bind,source=/home/docker/traefic.toml,target=/etc/traefik/traefik.toml \
+   --network proxy-network \
+    traefik
+
+
+
+
+
+docker service update \
+--label 'traefik.port=5000'\
+--label traefik.frontend.rule="Host:santander.co.uk"\
+--network proxy-network \
+gitlab-service
+
+
+
+
+docker service create --name traefik \
+--constraint=node.role==manager \
+--publish 80:80 \
+--publish 8080:8080 \
+--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock \
+ --network proxy-network \
+traefik:v1.1.0-rc1 \
+--docker \
+--docker.swarmmode \
+--docker.domain=traefik \
+--docker.watch \
+--web
+
+
+version: '2'
+
+services:
+  proxy:
+    image: traefik
+    command: --web --docker --docker.domain=docker.localhost --logLevel=DEBUG
+    networks:
+      - proxy_network
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /home/docker/traefic.toml:/traefik.toml
+
+networks:
+  webgateway:
+    driver: overlay
+
+
+
+
+    docker service create --name jira-service \
+    --network proxy-network \
+    --label com.df.notify=true \
+    --label com.df.distribute=true \
+    --label com.df.servicePath=/jira \
+    --label com.df.serviceName=jira \
+    --label com.df.port=8080 \
+    cptactionhank/atlassian-jira:latest
+
+
+
+
+--mount "type=bind,source=/home/jira,target=/opt/jira/home" \
+
+--label com.df.distribute=true \
+     --constraint 'node.product==jenkins' \
+     --mount "type=bind,source=/opt/jenkins,target=/var/jenkins_home" \
+
+    docker service create --name jenkins-service \
+   --mount "type=bind,source=$PWD/jenkins,target=/var/jenkins_home" \
+    --network proxy-network \
+    jenkins:2.7.4-alpine
+
+
+docker service create --name proxy-service \
+-p 80:80 -p 443:443 -p 8080:8080 \
+--network proxy-network \
+--constraint 'node.role==manager' \
+-e MODE=swarm \
+-e LISTENER_ADDRESS=swarm-listener \
+vfarcic/docker-flow-proxy
+
+
+
+curl "192.168.99.103:8080/v1/docker-flow-proxy/reconfigure?serviceName=jenkins-service&servicePath=/&port=8080"
+curl "192.168.99.101:8080/v1/docker-flow-proxy/reconfigure?serviceName=jira-service&servicePath=/&port=8080"
+
+
+
+
 
 
 lib dir of nexus container
@@ -145,6 +307,9 @@ lib dir of nexus container
 
 
 sudo docker run -d -p 80:80 -v $PWD/html:/var/www/html/ linuxconfig/apache
+
+portainer
+docker run -d -p 9000:9000 portainer/portainer -H tcp://192.168.99.100:2375
 
 
 ****MONITORING***
@@ -185,3 +350,25 @@ done
 echo 'eval $(docker-machine env manager-1)'
 
 ******************************************8
+<<<<<<< HEAD
+
+export DOCKER_HOST="tcp://127.0.0.1:2375"
+
+sudo docker -H 0.0.0.0:2375 -d &
+
+create one file at /etc/systemd/system/docker.service.d/docker.conf
+
+inside docker.conf paste below content
+
+[Service]
+ExecStart=
+ExecStart=/usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+Note that if there is no directory like docker.service.d and file docker.conf then create it.
+
+after saving this file reload configuration systemctl daemon-reload and restart systemctl restart docker.service
+
+after restarting you can see the port in systemctl status docker.service like /usr/bin/dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
+
+Try: -H tcp://0.0.0.0:2375 Instead of -H 0.0.0.0:2375
+=======
+>>>>>>> 3f01e2e192bdb223e013e0d292252a9f4b972c28
