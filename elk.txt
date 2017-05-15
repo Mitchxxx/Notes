@@ -1,0 +1,40 @@
+elk
+
+docker network create --driver overlay elk
+
+https://github.com/vfarcic/cloud-provisioning
+https://github.com/vfarcic/cloud-provisioning/blob/master/conf/logstash.conf
+
+
+
+docker service create \
+  --name elasticsearch \
+  --network elk \
+  --reserve-memory 500m \
+  elasticsearch:2.4
+
+
+FROM logstash
+
+RUN mkdir /config/
+COPY conf/logstash.conf /config/
+
+CMD ["-f", "/config/logstash.conf"]
+
+
+
+--mount "type=bind,source=/home/docker/logstash,target=/conf" \
+docker service create --name logstash \
+  --network elk \
+  -e LOGSPOUT=ignore \
+  --reserve-memory 100m \
+  logstash:latest logstash -f /conf/logstash.conf
+
+
+
+docker service create --name logger-test \
+  --network elk \
+  --restart-condition none \
+  debian \
+  logger -n logstash -P 51415 hello world
+
