@@ -1,6 +1,95 @@
 
 
-[Warn user about bad openshift_hostname values]
-The hostname "centos-2gb" for "centos-2gb" doesn't resolve to an ip address owned by this host. Please set openshift_hostname variable to a hostname that when resolved on the host in question resolves to an IP address matching an interface on this host. This host will fail liveness checks for pods utilizing hostPorts
+centos root
+Blueorange79
+
+
+**********open port 8443********
+Centos 7
+  763  firewall-cmd --zone=public --add-port=8443/tcp --permanent
+  764  iptables -L
+  765  firewall-cmd --list-all
+  Centos 6
+  767  iptables -I INPUT -p tcp -m tcp --dport 8443 -j ACCEPT
+  768  service iptables save
+  769  system-config-firewall-tui
+  770  sudo system-config-firewall-tui
+
+**********************8
+
+
+
+ sysctl restart docker
+  671  sysctl stop docker
+  672  systemctl stop docker
+  673  systemctl start docker
+  674  wget openshift-origin-client-tools-v1.5.0-031cbe4-linux-64bit.tar.gz
+  675  wget https://github.com/openshift/origin/releases/download/v1.5.0/openshift-origin-client-tools-v1.5.0-031cbe4-linux-64bit.tar.gz
+  676  tar xf openshift-origin-client-tools-v1.5.0-031cbe4-linux-64bit.tar.gz 
+  677  ls
+  678  cd openshift-origin-client-tools-v1.5.0-031cbe4-linux-64bit
+  679  ls
+  680  cp oc /usr/local/bin
+  681  ls
+  682  cd ..
+  683  rm -rf openshift-origin-client-tools-v1.5.0-031cbe4-linux-64bit
+  684  rm -rf openshift-origin-client-tools-v1.5.0-031cbe4-linux-64bit*
+  685  ls
+  686  cd /usr/bin/local
+  687  ls
+  688  cd /usr/local/bin
+  689  ls
+  690  clear
+  691  oc
+  692  oc cluster up
+  693  docker network inspect -f "{{range .IPAM.Config }}{{ .Subnet }}{{end}}" bridge
+  694  firewall-cmd --permanent --new-zone dockerc
+  695  firewall-cmd --permanent --zone dockerc --add-source 172.17.0.0/16
+  696  firewall-cmd --permanent --zone dockerc --add-port 8443/tcp
+  697  firewall-cmd --permanent --zone dockerc --add-port 53/udp
+  698  firewall-cmd --permanent --zone dockerc --add-port 8053/udp
+  699  firewall-cmd --reload
+  700  oc cluster up
+  701  oc cluster down
+  702  oc cluster up
+  703  oc whoami
+  704  oc projects
+
+  707  oc new-app openshift/ruby-20-centos7~https://github.com/openshift/ruby-ex.git
+  708  oc get all
+  709  oc get pod -w
+  710  oc logs -f ruby-ex-1-build
+
+ 774  oc expose service ruby-ex --hostname=myapp.ruby
+
+  783  oc delete pod webapp-1-build
+  790  oc delete project my-project
+  792  oc project ls
+  794  oc delete project myproject
+
+
+oc login https://139.59.165.0:8443
+oc project myproject
+oc status
+
+
+
+mkdir openshift
+vi sa.tpl
+
+{
+  "apiVersion": "v1",
+  "kind": "ServiceAccount",
+  "metadata": {
+  "name": "token-imran"
+  }
+}
+
+oc create -f sa.tpl 
+oc policy add-role-to-user admin system:serviceaccount:myproject:token-imran
+oc sa get-token token-imran -n myproject
+
+eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJteXByb2plY3QiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlY3JldC5uYW1lIjoidG9rZW4taW1yYW4tdG9rZW4tZHcxN2siLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoidG9rZW4taW1yYW4iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI3ZDhmY2M2Ny0zMzI0LTExZTctYTZlZS04Mjk4ZDg3ZDY0MTMiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6bXlwcm9qZWN0OnRva2VuLWltcmFuIn0.fL3jG5m567Q0TX-tMgPBj_uWohMWmmirYojJ75Jc3FEMln474rhwxIo4hydZggtclVTSRBYlvLZUGuQvbb3TR-JT7j02ylio72U-nHwmACvc4AXsp44oOsfG8REi82hCIGnO1eUm3XUktGMnJoIL_POTBTkNWi4A3bgi1m1FxdTKsrl1j6pFqofxM81Kx8S8xwDfv425dbTFcWqjTeYznSE1MYxTM5jyAThsvvY0kbjo2dqbK_nngn8Ppvmspd1UuanV16rLQPPVxoGi4HIpo6AdPHr1xXicHN4cDEEIqb1yWRcW0CprIxIOe5CdkAZPPk-K6jFIJdbsY7HP34CtjQ
+
 
 
