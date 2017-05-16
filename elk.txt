@@ -1,11 +1,15 @@
 elk
 
-docker network create --driver overlay elk
+
 
 https://github.com/vfarcic/cloud-provisioning
 https://github.com/vfarcic/cloud-provisioning/blob/master/conf/logstash.conf
+https://github.com/vfarcic/cloud-provisioning/blob/master/conf/prometheus.yml
+Grafana dashboard json
+https://grafana.com/dashboards/609
 
 
+docker network create --driver overlay elk
 
 docker service create \
   --name elasticsearch \
@@ -23,20 +27,17 @@ CMD ["-f", "/config/logstash.conf"]
 
 
 
-<<<<<<< HEAD
 
 docker service create --name logstash --network elk -e LOGSPOUT=ignore --reserve-memory 100m imranawan/logstash:latest
 
 docker service create --name logstash --network elk --mount "type=bind,source=$PWD/docker/logstash,target=/conf" -e LOGSPOUT=ignore --reserve-memory 100m logstash:2.4 logstash -f /conf/logstash.conf
-=======
+
 --mount "type=bind,source=/home/docker/logstash,target=/conf" \
 docker service create --name logstash \
   --network elk \
   -e LOGSPOUT=ignore \
   --reserve-memory 100m \
   logstash:latest logstash -f /conf/logstash.conf
-
->>>>>>> 129256600ffa9ee58ee478348cd5227b8c807d61
 
 
 docker service create --name logger-test \
@@ -45,7 +46,6 @@ docker service create --name logger-test \
   debian \
   logger -n logstash -P 51415 hello world
 
-<<<<<<< HEAD
 
 
 docker service create --name logspout \
@@ -75,7 +75,59 @@ docker service create --name kibana \
  kibana:4.6
 
 
-********************************************************************
+************************************GRAFANA********************************
 
-=======
->>>>>>> 129256600ffa9ee58ee478348cd5227b8c807d61
+docker service create --name grafana \
+--network proxy-network \
+-p 3000:3000 \
+grafana/grafana:3.1.1
+
+
+docker service create \
+  --name elasticsearch \
+  --network proxy-network \
+  --reserve-memory 300m \
+  -p 9200:9200 \
+  elasticsearch:2.4
+
+  docker service create --name logstash --network proxy-network -e LOGSPOUT=ignore --reserve-memory 100m imranawan/logstash:latest
+
+
+  docker service create --name logspout \
+ --network proxy-network \
+ --mode global \
+ --mount "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock" \
+ -e SYSLOG_FORMAT=rfc3164 \
+ gliderlabs/logspout syslog://logstash:51415
+
+
+docker service create --name prometheus \
+  --network proxy-network \
+  -p 9090:9090 \
+  imranawan/prometheus
+  prom/prometheus:v1.2.1
+
+  --mount "type=bind,source=$PWD/conf/prometheus.yml,target=/etc/prometheus/prometheus.yml" \
+  --mount "type=bind,source=$PWD/docker/prometheus,target=/prometheus" \
+
+prometheus.yml
+
+global:
+  scrape_interval: 5s
+
+scrape_configs:
+  - job_name: 'node'
+    dns_sd_configs:
+      - names: ['tasks.node-exporter']
+        type: A
+        port: 9100
+  - job_name: 'cadvisor'
+    dns_sd_configs:
+      - names: ['tasks.cadvisor']
+        type: A
+        port: 8080
+  - job_name: 'prometheus'
+    static_configs:
+      - targets: ['localhost:9090']
+
+
