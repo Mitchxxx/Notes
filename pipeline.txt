@@ -1,0 +1,117 @@
+node {
+   def mvnHome
+   stage('Preparation') { // for display purposes
+      // Get some code from a GitHub repository
+      git 'https://github.com/jglick/simple-maven-project-with-tests.git'
+      // Get the Maven tool.
+      // ** NOTE: This 'M3' Maven tool must be configured
+      // **       in the global configuration.
+      mvnHome = tool 'M3'
+   }
+   stage('Build') {
+      // Run the maven build
+      if (isUnix()) {
+         sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean package"
+      } else {
+         bat(/"${mvnHome}\bin\mvn" -Dmaven.test.failure.ignore clean package/)
+      }
+   }
+   stage('Results') {
+      junit '**/target/surefire-reports/TEST-*.xml'
+      archive 'target/*.jar'
+   }
+}
+
+imran_token
+yehrXN7k2FMrEx56xokW
+
+withCredentials([string(credentialsId: 'mytoken', variable: 'TOKEN')]) {
+
+srvalmivlsk00.santanderuk.pre.corp
+
+DOCKER_OPTS="-H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock"
+
+DOCKER_OPTS="-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock"
+
+
+node('jenkins-slave'){
+    stage ('Functional Test') {
+        checkout([$class: 'GitSCM', branches: [[name: 'master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '28bc5983-ff99-45e8-b949-1ea05477f2e9', url: 'https://uk-gitlab.almuk.santanderuk.corp/ab277474/santander_test_automation_framework.git']]])
+        pom = readMavenPom file: 'pom.xml'
+        pom.version
+        //sh 'mvn clean compile -X -U -s settings.xml -Djavax.net.ssl.trustStore=nexus.jks -Djavax.net.ssl.trustStorePassword=changeit -Dmaven.test.skip=true'
+        sh 'cd Automation-Framework_Mobile'
+        sh 'ls'
+        //pom = readMavenPom file: 'pom.xml'
+        //pom.version
+        //sh 'mvn cucumber-parallel-run:run -X -s settings.xml -Djavax.net.ssl.trustStore=nexus.jks -Djavax.net.ssl.trustStorePassword=changeit'
+        //sh 'mvn cucumber-runner:run -Dappium.localPlatformName=ios'
+    }
+    //step([$class: 'CucumberReportPublisher', fileExcludePattern: '', fileIncludePattern: 'combined.json', ignoreFailedTests: true, jenkinsBasePath: '', jsonReportDirectory: 'target/cucumber/threads', missingFails: true, parallelTesting: false, pendingFails: true, skippedFails: true, undefinedFails: true])
+}
+
+
+
+
+node {
+         docker.withRegistry('https://registry', 'docker-registry-credential-id') {
+
+         checkout([$class: 'GitSCM', branches: [[name: 'jenkins']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'gitlab-alm-projects', url: 'https://uk-gitlab.almuk.santanderuk.corp/ab278557/almuk-images.git']]])
+
+        sh "git rev-parse HEAD > .git/commit-id"
+        def commit_id = readFile('.git/commit-id').trim()
+        println commit_id
+
+        stage "build"
+        def app = docker.build "registry', 'jenkins/Dockerfile'"
+
+        stage "publish"
+        app.push 'master'
+        app.push "${commit_id}"
+    }
+}
+
+
+node {
+   def mvnHome
+   stage('build') {
+
+      docker.withRegistry('https://registry', 'docker-registry-id') {
+
+      checkout([$class: 'GitSCM', branches: [[name: 'jenkins']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: '-projects', url: 'https']]])
+
+        sh "git rev-parse HEAD > .git/commit-id"
+        def commit_id = readFile('.git/commit-id').trim()
+        println commit_id
+        def app = docker.build "imranawan/webserver', 'jenkins/Dockerfile'"
+
+    //    stage "publish"
+
+        app.push "${commit_id}"
+        }
+
+     }
+}
+
+
+
+
+
+node {
+         checkout([$class: 'GitSCM', branches: [[name: 'jenkins']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'gitlab-alm-projects', url: 'https://uk-gitlab.almuk.santanderuk.corp/ab278557/almuk-images.git']]])
+
+        sh "git rev-parse HEAD > .git/commit-id"
+        def commit_id = readFile('.git/commit-id').trim()
+        println commit_id
+
+        stage "build"
+
+        def app = docker.build('imranawan/webserver', 'Dockerfile')
+
+        stage "publish"
+
+        docker.withRegistry('https://hub.docker.com', 'docker-id') {
+           //app.push 'master'
+           app.push "${commit_id}"
+        }
+}
