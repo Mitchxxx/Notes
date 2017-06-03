@@ -98,20 +98,21 @@ node {
 
 
 node {
-         checkout([$class: 'GitSCM', branches: [[name: 'jenkins']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'gitlab-alm-projects', url: 'https://uk-gitlab.almuk.santanderuk.corp/ab278557/almuk-images.git']]])
+        
+        stage "build" {
+         docker.withRegistry('https://hub.docker.com', 'docker-registry-credential-id') {
 
-        sh "git rev-parse HEAD > .git/commit-id"
-        def commit_id = readFile('.git/commit-id').trim()
-        println commit_id
+         checkout([$class: 'GitSCM', branches: [[name: 'jenkins']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'gitlab-alm-projects', url: 'https://github.com/imranfawan/WebApp.git']]])
 
-        stage "build"
-
-        def app = docker.build('imranawan/webserver', 'Dockerfile')
-
-        stage "publish"
-
-        docker.withRegistry('https://hub.docker.com', 'docker-id') {
-           //app.push 'master'
-           app.push "${commit_id}"
+          sh "git rev-parse HEAD > .git/commit-id"
+          def commit_id = readFile('.git/commit-id').trim()
+          println commit_id
+          def app = docker.build "imranawan/webserver', 'Dockerfile'"
+         }
+         
+        stage "publish" {
+           app.push 'master'
+          app.push "${commit_id}"
         }
+    }
 }
