@@ -19,6 +19,73 @@ sudo fuser 80/tcp
 
 kill -9 pid
 
+***********************************************
+
+
+ egrep -R jira_version:
+
+docker-machine stop manager1
+VBoxManage modifyvm manager1 --natdnsproxy1 off --natdnshostresolver1 off
+docker-machine start manager1
+
+**************DOCKER***********************
+
+find . |xargs grep - li "Including ALM v. latest style in Jenkins.." 2>/dev/null
+find . |xargs grep -li "Including ALM v. latest style in Jenkins.."
+history |grep -i build
+
+history |grep mount
+
+
+sudo chown 1000 jenkins_home
+
+nameserver 10.0.2.3
+
+/etc/systemd/system/docker.service.d/http-proxy.conf
+/etc/init.d/docker
+
+docker insecure registries
+
+1.10.3
+/etc/sysconfig/docker
+1.12+
+vim /etc/docker/daemon.json
+
+
+docker --insecure-registry=https://registry.lvtc.gsnet.corp login https://registry.lvtc.gsnet.corp
+ INSECURE_REGISTRY='--insecure-registry registry.lvtc.gsnet.corp --insecure-registry registry'
+ INSECURE_REGISTRY='--insecure-registry registry'
+
+ [Service]
+ Environment="HTTP_PROXY=http://" "HTTPS_PROXY=http://" "NO_PROXY=localhost,127.0.0.1,172.30.1.1,10.0.2.15,registry."
+
+
+df -h|more
+
+ #Check status:
+systemctl status firewalld
+#Stop firewall:
+systemctl stop firewalld
+#Disable firewall:
+systemctl disable firewalld
+
+/etc/resolve
+
+nameserver 10.3.10.10
+nameserver 10.17.10.10
+
+nameserver 8.8.8.8
+
+GIT_SSL_NO_VERIFY=true git clone https://git.git
+git config --global http.sslVerify false
+
+export DOCKER_HOST="tcp://0.0.0.0:2375"
+ -v /var/run/docker.sock:/var/run/docker.sock
+/etc/default/docker
+
+
+
+
 
 
 
