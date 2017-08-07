@@ -1,8 +1,5 @@
    sudo docker run -d -p 8080:8080 openshift/jenkins-1-centos7
 
-
-
-
   systemctl disable firewalld 
 
   Install docker-machine 
@@ -12,28 +9,6 @@
     sudo cp /tmp/docker-machine /usr/local/bin/docker-machine
 
 
-
-  NAME       ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
-  manager1   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.04.0-ce   
-  manager2   -        virtualbox   Running   tcp://192.168.99.105:2376           v17.04.0-ce   
-  manager3   -        virtualbox   Running   tcp://192.168.99.103:2376           v17.04.0-ce   
-  worker2    -        virtualbox   Stopped                                       Unknown       
-  worker3    -        virtualbox   Stopped                                       Unknown       
-  worker4    -        virtualbox   Running   tcp://192.168.99.102:2376           Unknown       Unable to query docker version: Get https://192.168.99.102:2376/v1.15/version: x509: certificate is valid for 192.168.99.104, not 192.168.99.102
-  worker5    -        virtualbox   Stopped                                       Unknown       
-  worker6    -        virtualbox   Running   tcp://192.168.99.104:2376           v17.04.0-ce    
-  NAME       ACTIVE   DRIVER       STATE     URL                         SWARM   DOCKER        ERRORS
-  manager1   -        virtualbox   Running   tcp://192.168.99.100:2376           v17.04.0-ce   
-  manager2   -        virtualbox   Stopped                                       Unknown       
-  manager3   -        virtualbox   Stopped                                       Unknown       
-  worker2    -        virtualbox   Running   tcp://192.168.99.101:2376           Unknown       Unable to query docker version: Get https://192.168.99.101:2376/v1.15/version: x509: certificate is valid for 192.168.99.102, not 192.168.99.101
-  worker3    -        virtualbox   Running   tcp://192.168.99.102:2376           Unknown       Unable to query docker version: Get https://192.168.99.102:2376/v1.15/version: x509: certificate is valid for 192.168.99.103, not 192.168.99.102
-  worker4    -        virtualbox   Running   tcp://192.168.99.103:2376           Unknown       Unable to query docker version: Get https://192.168.99.103:2376/v1.15/version: x509: certificate is valid for 192.168.99.104, not 192.168.99.103
-  worker5    -        virtualbox   Running   tcp://192.168.99.104:2376           Unknown       Unable to query docker version: Get https://192.168.99.104:2376/v1.15/version: x509: certificate is valid for 192.168.99.106, not 192.168.99.104
-  worker6    -        virtualbox   Stopped                                       Unknown       
-
-
-
   docker-machine create --driver virtualbox manager1
 
   docker-machine ip manager1
@@ -41,12 +16,9 @@
 
    docker swarm init --advertise-addr 192.168.99.103
 
-
      docker swarm join \
-      --token SWMTKN-1-0w33jb17xlx4oa0tyyzsw5jmohmte697tq9lefqrs6o797dif9-e561vho6ildmke065kug272nz \
+      --token SWMTKN-1- \
       192.168.99.103:2377
-
-
 
    docker service create --replicas 5 -p 80:80 --name web nginx
    docker service ps web
@@ -55,12 +27,10 @@
   shut down a worker node
   docker-machine rm -f worker1
 
-
     For example if you are already on the node (for example manager1) that you want to check, you can use the name self for the node.
   $ docker node inspect self
   or if you want to check on other nodes. 
    docker node inspect worker1
-
 
   docker node update --label-add bar=baz worker1
 
@@ -73,8 +43,6 @@
   docker node rm node-2 (from manager, to remove from node list)
 
 
-
-
   eval $(docker-machine env manager1)
 
   docker network create --driver overlay proxy-network
@@ -85,19 +53,10 @@
   docker run -d -p 8081:8081 --name nexus -v /home/imran/TestDevProjects/Docker/nexus/lib:/opt/sonatype/nexus/lib sonatype/nexus3
   docker run -d -p 8081:8081 --name nexus  sonatype/nexus3
 
-
-
   docker service create --name nexus-service \
     --network nexus-network \
     --network proxy-network \
     sonatype/nexus3
-
-
-
-
-
-
-
 
   docker run --detach --publish 8080:8080 cptactionhank/atlassian-jira:latest
 
@@ -120,12 +79,10 @@
   -e DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove --constraint 'node.role==manager' \
   vfarcic/docker-flow-swarm-listener
 
-
   docker service update \
       --env-add DF_NOTIFY_CREATE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/reconfigure,http://192.168.99.101:8081/nexus \
       --env-add DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove,http://192.168.99.101:8081/nexus \
       swarm-listener
-
 
 
   docker service update \
@@ -133,12 +90,10 @@
       --env-add DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove,http://192.168.99.101:8888/jenkins \
       swarm-listener
 
-
       docker service update \
       --env-add DF_NOTIFY_CREATE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/reconfigure,http://192.168.99.101:8080/jira \
       --env-add DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove,http://192.168.99.101:8080/jira \
       swarm-listener
-
 
 
       docker service create --name jenkins-service \
@@ -159,20 +114,15 @@
     --label com.df.port=8081 \
     sonatype/nexus3
 
-
   docker service create -name whoami0 \
       --label traefik.port=80 \
       --network traefik-net \
       emilevauge/whoami"
 
-
-
       docker service create --name jira-service \
       --label traefik.port=8080 \
       --network proxy-network \
       cptactionhank/atlassian-jira:latest
-
-
 
   docker service create --name traefik \
       --constraint=node.role==manager \
@@ -198,17 +148,13 @@
 
     curl -H Host:nexus.imran.traefik http://0.0.0.0:80
 
-
   docker run -it -d -p 8080:8080 -e HOST=192.168.99.100 -v /var/run/docker.sock:/var/run/docker.sock manomarks/visualizer
-
-
 
   docker service update \
   --label 'traefik.port=5000'\
   --label traefik.frontend.rule="Host:santander.co.uk"\
   --network proxy-network \
   gitlab-service
-
 
 
   version: '2'
@@ -230,9 +176,6 @@
     webgateway:
       driver: overlay
 
-
-
-
       docker service create --name jira-service \
       --network proxy-network \
       --label com.df.notify=true \
@@ -241,7 +184,6 @@
       --label com.df.serviceName=jira \
       --label com.df.port=8080 \
       cptactionhank/atlassian-jira:latest
-
 
   --mount "type=bind,source=/home/jira,target=/opt/jira/home" \
 
@@ -263,15 +205,8 @@
   -e LISTENER_ADDRESS=swarm-listener \
   vfarcic/docker-flow-proxy
 
-
-
   curl "192.168.99.103:8080/v1/docker-flow-proxy/reconfigure?serviceName=jenkins-service&servicePath=/&port=8080"
   curl "192.168.99.101:8080/v1/docker-flow-proxy/reconfigure?serviceName=jira-service&servicePath=/&port=8080"
-
-
-
-
-
 
   lib dir of nexus container
   /opt/sonatype/nexus/lib
@@ -343,3 +278,510 @@
   Try: -H tcp://0.0.0.0:2375 Instead of -H 0.0.0.0:2375
   =======
   >>>>>>> 3f01e2e192bdb223e013e0d292252a9f4b972c28
+  
+  
+  **************************SWARM****************************************************
+  
+  
+
+
+************SERVICE*********************
+
+docker service create --name traefik /
+--constraint 'node.role==manager' /
+--publish 80:80 --publish 8080:8080 /
+--mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock /
+--network traefik-net traefik:camembert /
+--docker --docker.swarmmode --docker.domain=companyname.gs.corp --docker.watch --logLevel=DEBUG --web
+
+************GITLAB**********************
+
+docker service create --name gitlab-redis-service /
+--replicas 1 --no-healthcheck /
+--publish mode=host,target=6379,published=6379 /
+--publish mode=host,target=26379,published=26379  /
+--network proxy-network /
+--constraint 'node.labels.product == gitlab' /
+--label 'traefik.port=6379' /
+registry."gitlab-redis:1.0
+
+docker service create --name gitlab-postgres-db-service /
+--replicas 1 /
+-p 5432:5432  /
+--network proxy-network /
+--label 'traefik.port=5432' /
+--mount type=bind,source=/opt/swarm-vols/gitlab/postgres/DBData,destination=/var/lib/postgresql/data /
+--constraint 'node.labels.product == gitlab' /
+-e POSTGRES_PASSWORD=password -e POSTGRES_USER=gitlab  -e POSTGRES_DB=gitlabhq_production /
+postgres:9.6
+
+docker service create --name gitlab-service /
+--replicas 1 /
+-p 83:80 -p 8343:443  /
+--network gitlab-network  /
+--network proxy-network /
+--mount type=bind,source=/opt/swarm-vols/gitlab/gitlab-app/gitlab-config,destination=/etc/gitlab /
+--mount type=bind,source=/opt/swarm-vols/gitlab/gitlab-app/gitlab-data,destination=/gitlab-data /
+--mount type=bind,source=/opt/swarm-vols/gitlab/gitlab-app/gitlab-logs,destination=/var/log/gitlab  /
+--constraint 'node.labels.product == gitlab'   /
+--label 'traefik.port=80' --label  traefik.frontend.rule="Host:gitlab1..uk.""uk.corp" /
+gitlab-app:1.0
+
+
+************************JIRA********************************************
+
+docker service create --name jira-service --replicas 1 -p 8089:8080 --constraint 'node.labels.product == jira' --network proxy-network --network jira-network --label traefik.docker.network=proxy-network --label 'traefik.port=8080' --label  traefik.frontend.rule="Host:jira1.""uk.gs.corp" --label 'traefik.enable=true' hbokh/docker-jira-postgresql
+
+docker service create --name jira-postgres-db-service /
+--network jira-network /
+--replicas 1 -e POSTGRES_PASSWORD=jira -e POSTGRES_USER=jira  -e POSTGRES_DB=jira /
+--mount type=bind,source=/opt/swarm-vols/jira/postgres/DBData,destination=/var/lib/postgresql/data /
+postgres:9.6
+
+
+docker service create --name jira-service /
+--replicas 1 /
+-p 8089:8080 /
+--network proxy-network --network jira-network /
+--constraint 'node.labels.product == jira' /
+--mount type=bind,source=/opt/swarm-vols/jira,destination=/opt/jira/home /
+--label traefik.docker.network=proxy-network --label 'traefik.port=8080' --label  traefik.frontend.rule="Host:jira1.""uk.gs.corp" --label 'traefik.enable=true' /
+cptactionhank/atlassian-jira
+
+
+************************CONF***************************
+
+docker service create --name conf-postgres-db-service /
+--constraint 'node.labels.product==conf-db' /
+--network conf-network /
+--replicas 1 /
+-e POSTGRES_PASSWORD=conf -e POSTGRES_USER=conf  -e POSTGRES_DB=confluence /
+--mount type=bind,source=/opt/swarm-vols/confluence/postgres/DBData,destination=/var/lib/postgresql/data /
+postgres:9.6
+
+
+docker service create --name conf-service /
+--constraint 'node.labels.product==conf' /
+--replicas 1 /
+--mount type=bind,source=/opt/swarm-vols/confluence,target=/var/atlassian/confluence /
+--constraint 'node.labels.product==confluence' /
+--network conf-network --network proxy-network /
+--label traefik.docker.network=proxy-network --label 'traefik.port=8090' --label traefik.frontend.rule="Host:confluence1...""uk.corp" --label 'traefik.enable=true' /
+-p 8090:8090 /
+cptactionhank/atlassian-confluence
+
+************************JENKINS***************************
+
+docker service create --name jenkins-service \
+--constraint 'node.labels.product==jenkins.' \
+--network proxy-network \
+--mount type=bind,source=/opt/swarm-vols/jenkins/jenkins_home,target=/var/lib/jenkins \
+--label traefik.docker.network=proxy-network  \
+--label 'traefik.port=8080' \
+--label traefik.frontend.rule="Host:jenkins1...corp" \
+--label 'traefik.enable=true' -p 81:8081 -p 86:8080  \
+--env-file ./env.list \
+jenkins
+
+***************NEXUS**********************
+
+docker service create --name nexus-service \
+  --network proxy \
+  --mount source=/opt/swarm-vols/nexus,target=/opt/sonatype/nexus,type=bind \
+  --label com.df.notify=true \
+  --label com.df.distribute=true \
+  --label com.df.servicePath=/nexus-demo \
+  --label com.df.port=8081 \
+  sonatype/nexus3
+
+
+************SONAR**********************
+
+docker service create --name sonar-service /
+--replicas 1 /
+-e SONARQUBE_JDBC_USERNAME=sonar /
+-e SONARQUBE_JDBC_PASSWORD=sonar /
+-e SONARQUBE_JDBC_URL=jdbc:postgresql://sonar-postgres-db-service/sonar /
+-p 84:9000 -p 85:9092 /
+--network proxy-network --network sonar-network /
+--mount type=bind,source=/opt/swarm-vols/sonar/sonar-app/sonar-logs,destination=/opt/sonarqube/logs /
+--mount type=bind,source=/opt/swarm-vols/sonar/sonar-app/sonar-conf,destination=/opt/sonarqube/conf  /
+--constraint 'node.labels.product == sonar' /
+--label traefik.docker.network=proxy-network  /
+--label 'traefik.port=9000' /
+--label  traefik.frontend.rule="Host:sonar1.companyname.gs.corp" /
+--label 'traefik.enable=true'   rsonarqube:6.3.1
+
+
+docker service update --network proxy-network  --label-add 'traefik.port=5432' gitlab-postgres-db-service
+docker service update --label-add 'traefik.port=6379' gitlab-redis-service
+docker service update --label-rm 'traefik.port=80' --label-rm traefik.frontend.rule="Host:gitlabtest..gs.corp" gitlab-service
+docker service update --label-add traefik.frontend.rule="Host:jenkins1.""uk.gs.corp"   jenkins-service
+
+
+
+docker service create --name conf-service --replicas 1 --mount type=bind,source=/opt/swarm-vols/confluence,target=/var/atlassian/confluence --constraint 'node.labels.product==confluence' --network proxy-network --label traefik.docker.network=proxy-network --label 'traefik.port=8090' --label traefik.frontend.rule="Host:confluence1...""uk.corp" --label 'traefik.enable=true' -p 8090:8090 cptactionhank/atlassian-confluence
+
+docker run -v /opt/swarm-vols/conf:/var/atlassian/application-data/confluence --name="confluence" -d -p 8090:8090 -p 8091:8091 atlassian/confluence-server
+
+docker service create --name conf-service --replicas 1 --constraint 'node.labels.product==conf' --network proxy-network --mount source=/opt/swarm-vols/conf,target=/var/atlassian/application-data/confluence,type=bind --label traefik.docker.network=proxy-network --label 'traefik.port=8090' --label traefik.frontend.rule="Host:confluence1...""uk.corp" --label 'traefik.enable=true' -p 8090:8090 -p 8091:8091 atlassian/confluence-server
+
+docker run -v /data/your-confluence-home:/var/atlassian/application-data/confluence --name="confluence" -d -p 8090:8090 -p 8091:8091 atlassian/confluence-server
+
+docker node update --label-add product=conf srv.pvlsk10..gs.corp
+
+
+docker network create --driver overlay conf-network
+
+docker network create --driver overlay jira-network
+
+docker node update --label-add product=conf machine-name
+
+--constraint 'node.labels.product==conf-db'
+
+- "/opt/docker-volumes/confluence/v2/confluence/work_dir:/var/local/atlassian/confluence"
+- "/opt/docker-volumes/confluence/v2/confluence/install_dir:/usr/local/atlassian/confluence"
+- "/opt/docker-volumes/confluence/v2/confluence/logs:/usr/local/atlassian/confluence/logs"
+- "/opt/docker-volumes/confluence/v2/confluence/backups:/var/atlassian/application-data/confluence/backups"
+
+docker run -d --name conf-postgres-db-service \
+-e POSTGRES_PASSWORD=conf -e POSTGRES_USER=conf  -e POSTGRES_DB=confluence \
+-v /opt/docker-volumes/confluence/v2/confluence/postgres/DBData:/var/lib/postgresql/data \
+postgres:9.6
+
+docker run -d --name conf-service --link conf-postgres-db-service:conf-postgres-db-service \
+-p 8090:8090 \
+-v /opt/docker-volumes/confluence/v2/confluence/work_dir:/var/local/atlassian/confluence \
+-v /opt/docker-volumes/confluence/v2/confluence/install_dir:/usr/local/atlassian/confluence \
+-v /opt/docker-volumes/confluence/v2/confluence/logs:/usr/local/atlassian/confluence/logs \
+-v /opt/docker-volumes/confluence/v2/confluence/backups:/var/atlassian/application-data/confluence/backups \
+confluence:1.0.0
+
+
+docker service create --name conf-postgres-db-service \
+--network conf-network \
+--replicas 1
+-e POSTGRES_PASSWORD=conf -e POSTGRES_USER=conf  -e POSTGRES_DB=confluence \
+--mount type=bind,source=/opt/docker-volumes/confluence/v2/confluence/postgres/DBData,destination=/var/lib/postgresql/data \
+postgres:9.6
+
+
+docker service create --name conf-service \
+--replicas 1 \
+--mount type=bind,source=/opt/docker-volumes/confluence/v2/confluence/work_dir,target=/var/local/atlassian/confluence \
+--mount type=bind,source=/opt/docker-volumes/confluence/v2/confluence/install_dir,target=/usr/local/atlassian/confluence \
+--mount type=bind,source=/opt/docker-volumes/confluence/v2/confluence/logs,target=/usr/local/atlassian/confluence/logs \
+--mount type=bind,source=/opt/docker-volumes/confluence/v2/confluence/backups,target=/var/atlassian/application-data/confluence/backups \
+--network conf-network --network ._default \
+--label traefik.docker.network=._default \
+--label 'traefik.port=8090' \
+--label traefik.frontend.rule="Host:confluence1...corp" \
+--label 'traefik.enable=true' \
+ confluence:0.1
+
+ --constraint 'node.labels.product==confluence' \
+
+
+ docker run -d --name jira-postgres-db-service \
+ -e POSTGRES_PASSWORD=jira -e POSTGRES_USER=jira  -e POSTGRES_DB=jira \
+ -v /opt/docker-volumes/jira/v2/postgres/DBData:/var/lib/postgresql/data \
+postgres:9.6
+
+
+docker run -d --name jira --link jira-postgres-db-service:jira-postgres-db-service \
+-p 8089:8080 \
+-v /opt/docker-volumes/jira/v2/work_dir:/opt/jira/home \
+jira:1.0.0
+
+
+
+docker service create --name jira-service --replicas 1 \
+-p 8089:8080 \
+--network proxy-network \
+--network jira-network \
+--constraint 'node.labels.product == jira' \
+--mount type=bind,source=/opt/swarm-vols/jira, destination=/opt/jira/home
+--label traefik.docker.network=proxy-network  \
+--label 'traefik.port=8080' \
+--label  traefik.frontend.rule="Host:jira1.""uk.gs.corp" \
+--label 'traefik.enable=true' cptactionhank/atlassian-jira
+
+
+
+--mount type=bind,source=/opt/swarm-vols/jira, destination=/opt/jira/home  \
+
+
+docker service create --name sonar-service --replicas 1 \
+-e SONARQUBE_JDBC_USERNAME=sonar -e SONARQUBE_JDBC_PASSWORD=sonar \
+-e SONARQUBE_JDBC_URL=jdbc:postgresql://sonar-postgre-db-service/sonar \
+-p 84:9000 -p 85:9092 \
+--network proxy-network \
+--network sonar-network \
+--mount type=bind,source=/opt/swarm-vols/sonar/sonar-app/sonar-logs,destination=/opt/sonarqube/logs \
+--mount type=bind,source=/opt/swarm-vols/sonar/sonar-app/sonar-conf,destination=/opt/sonarqube/conf  \
+--constraint 'node.labels.product == sonar' --label traefik.docker.network=proxy-network  \
+--label 'traefik.port=9000' \
+--label  traefik.frontend.rule="Host:sonar1.gs.corp" \
+--label 'traefik.enable=true'   sonarqube:6.3.1
+
+
+docker service create --name jenkins-service --constraint 'node.labels.product==jenkins.' --network proxy-network --mount type=bind,source=/opt/swarm-vols/jenkins/jenkins_home_poc,target=/var/lib/jenkins --label traefik.docker.network=proxy-network  --label 'traefik.port=8080' --label traefik.frontend.rule="Host:connect-jenkins..uk.""uk.corp" --label 'traefik.enable=true' -p 8087:8081 -p 8086:8080 --env-file ./env.list registry.""uk.gs.corp:5000/./jenkins
+
+docker service create --name jenkins-service \
+--constraint 'node.labels.product==jenkins.' \
+--network proxy-network \
+--mount type=bind,source=/opt/swarm-vols/jenkins/jenkins_home_poc,target=/var/lib/jenkins \
+--label traefik.docker.network=proxy-network  \
+--label 'traefik.port=8081' \
+--label traefik.frontend.rule="Host:connect-jenkins1..uk.""uk.corp" \
+--label 'traefik.enable=true' -p 8087:8081 -p 8086:8086 \
+--env-file ./env.list jenkins
+
+
+
+version: '3'
+services:
+  #jenkins
+  jenkins-.-v2:
+    image: "jenkins:1.0.0"
+    networks:
+      ._default:
+    ports:
+      - "8070:8080"
+      - "8060:50000"
+    volumes:
+      - "/opt/docker-volumes/jenkins/v4/jenkins_home:/var/lib/jenkins \
+      - "/var/run/docker.sock:/var/run/docker.sock"
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "[app=confluence]"
+        - "traefik.port=8080"
+        - "traefik.docker.network=._default"
+        - "traefik.frontend.rule=Host:jenkins-v2.corp"
+      restart_policy:
+        condition: "on-failure"
+      #placement:
+      #  constraints:
+      #    - node.role == manager
+
+networks:
+  ._default:
+    external: true
+
+
+
+
+docker run --name jenkinsuk. \
+-d -p 8087:8080 -p 8086:50000 \
+-v /var/run/docker.sock:/var/run/docker.sock \
+--env-file ./env.list registry.""uk.gs.corp:5000/./jenkins
+
+env.list
+
+JENKINS_URL=
+JENKINS_EMAIL=
+GITLAB_URL=
+GITLAB_API_TOKEN=
+SWARM_MASTER_URL=tcp://
+DOCKER_SLAVES_VOLUMES_ROOT=
+NEXUS_BASE_URL=
+NEXUS_MAVEN_GROUP=
+NEXUS_MAVEN_RELEASES=/repository/maven-releases
+NEXUS_MAVEN_SNAPSHOTS=/repository/maven-snapshots
+MAVEN_DEPLOYER_LOGIN=admin
+MAVEN_DEPLOYER_PASSWD=admin123
+JAVA_OPTS=-Dhudson.model.ParametersAction.keepUndefinedParameters=true
+TZ=Europe/London
+no_proxy=
+LDAP_SERVER=
+LDAP_BASE=
+LDAP_USER_SEARCH=BSalias={0}
+LDAP_BIND_DN=
+LDAP_DISPLAY_NAME=
+LDAP_PASSWORD=
+LDAP_USER_GROUPS=
+LDAP_PROMOTER_GROUPS=
+LDAP_GROUP_FILTER=
+LDAP_GROUP_BASE=
+LDAP_ADMIN_GROUPS=
+JENKINS_SLAVE_AGENT_PORT=
+DOCKER_REGISTRY_USERNAME=
+DOCKER_REGISTRY_PASSWORD=
+JENKINS_OPTS="--httpPort=8087"
+
+
+
+HA PROXY
+
+docker service create --name jenkins-service --replicas 1 -p 81:80 -p 8143:443  --network proxy-network --mount type=bind,source=/opt/swarm-vols/jenkins_home,target=/var/lib/jenkins  --constraint 'node.labels.product == jenkins'  --label com.df.notify=true --label com.df.distribute=true --label com.df.servicePath=/ --label com.df.port=8080 --label com.df.reqPathSearch='/jenkins'  --label com.df.reqPathReplace='/' imranawan/jenkinsos
+docker service create --name proxy-service -p 80:80 -p 443:443 -p 8080:8080 --network proxy-network -e MODE=swarm vfarcic/docker-flow-proxy
+docker service create --name proxy -p 80:80 -p 443:443 -p 8080:8080  --constraint 'node.labels.product==proxy-jenkins' --network proxy-network -e MODE=swarm vfarcic/docker-flow-proxy
+curl "192.168.99.104:8080/v1/docker-flow-proxy/reconfigure?serviceName=jenkins-service&servicePath=/jenkins&port=8080"
+
+*************BUILD************
+
+
+docker build --build-arg HTTP_PROXY=http:// --build-arg HTTPS_PROXY=http:// --build-arg NO_PROXY=.corp -t jenkins-. .
+
+export http_proxy=http://
+export https_proxy=http://
+
+ENV http_proxy http://
+ENV https_proxy http://
+
+docker-machine create -d virtualbox \
+--engine-env http_proxy=http://proxyapps.gsnet.corp:80 \
+--engine-env https_proxy=http://proxyapps.gsnet.corp:80 \
+worker3
+ 
+docker node update --label-add product=jenkins machineName
+docker node update --label-add product=jenkins machineName
+docker node update --label-add region=cap1 machineName
+
+
+&& curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add - \
+&& add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+&& apt-get update \
+&& apt-cache policy docker-ce \
+&& apt-get install -y docker-ce
+
+
+docker node update --label-add product=jenkins.uk srv.pvlsk02.""uk.gs.corp
+
+docker service create --name jenkins-service \
+--constraint 'node.labels.product==jenkins.' \
+--network proxy-network \
+--mount type=bind,source=/opt/swarm-vols/jenkins-connect/jenkins_home,target=/var/jenkins_home \
+--label traefik.docker.network=proxy-network  \
+--label 'traefik.port=8080' \
+--label traefik.frontend.rule="Host:connect-jenkins1..uk.""uk.corp/" \
+--label 'traefik.enable=true' -p 8087:8080 -p 8086:8086 \
+--env-file ./env.list registry.""uk.gs.corp:5000/./jenkins:latest
+
+
+docker service create --name jenkins-service --constraint 'node.labels.product==jenkins.uk' --network proxy-network --mount type=bind,source=/opt/docker-volumes/jenkins/connect/jenkins_home,target=/var/jenkins_home --label traefik.docker.network=proxy-network --label 'traefik.port=8080' --label traefik.frontend.rule="Host:connect-jenkins..uk.""uk.corp/" --label 'traefik.enable=true' -p 8080:8080 -p 8086:8086 --env-file ./env.list registry.""uk.gs.corp:5000/./jenkins:latest
+
+docker run --env-file=env.list -d -p 8080:8080 -p 8086:50000 \
+--name jenkins \
+-v /var/run/docker.sock:/var/run/docker.sock \
+-v /Users/Projects/jenkins_home:/var/jenkins_home \
+jenkins:latest
+
+docker run --env-file=env.list -d -p 8080:8080 -p 8086:8086 \
+--name jenkins_connect -v /opt/docker-volumes/jenkins/connect/jenkins_home:/var/jenkins_home \
+jenkins:latest
+
+
+docker run -d --name conf-postgres-db \
+-e POSTGRES_PASSWORD=conf -e POSTGRES_USER=conf  -e POSTGRES_DB=confluence \
+-v /opt/docker-volumes/conf/postgres/DBData:/var/lib/postgresql/data \
+postgres:9.6
+
+
+  docker run -d --name confluence_confluence \
+  --link confluence_postgres:confluence_postgres \
+  -p 7000:8090 \
+  -v /opt/docker-volumes/confluence/uk/confluence/work_dir:/var/local/atlassian/confluence \
+  -v /opt/docker-volumes/confluence/uk/confluence/install_dir:/usr/local/atlassian/confluence \
+  -v /opt/docker-volumes/confluence/uk/confluence/logs:/usr/local/atlassian/confluence/logs \
+  -v /opt/docker-volumes/confluence/uk/confluence/backups:/var/atlassian/application-data/confluence/backups \
+  -v /opt/docker-volumes/confluence/uk/confluence/conf:/opt/atlassian/confluence/conf \
+  confluence:6.2.2_1
+
+/var/atlassian/application-data/confluence
+
+
+docker run -d --name confluence_confluence \
+--link confluence_postgres:confluence_postgres \
+-p 7000:8090 \
+-v /opt/docker-volumes/confluence/uk/confluence/logs:/var/atlassian/application-data/confluence/logs \
+-v /opt/docker-volumes/conf/confluence:/opt/atlassian/confluence \
+confluence:6.2.2_2
+
+
+  docker run -d --name confluence_confluence \
+  --link confluence_postgres:confluence_postgres \
+  -p 7000:8090 \
+confluence:6.2.2
+
+
+  COPY server.xml /opt/atlassian/confluence/conf/
+  COPY conf_keystore /opt/atlassian/confluence/conf/
+
+  docker run -d --name confluence_confluence \
+  -p 7000:8090 \
+  -v /home/conf/server.xml:/opt/atlassian/confluence/conf/server.xml \
+  -v /home/conf/conf_keystore:/opt/atlassian/confluence/conf/conf_keystore \
+  confluence:6.2.2
+
+
+
+docker run -d --name jira_jira_uk \
+--link jira_postgres_uk:jira_postgres_uk \
+-p 7200:8080 \
+-v /opt/docker-volumes/jira/uk/jira/work_dir:/opt/atlassian/jira \
+-v /opt/docker-volumes/jira/uk/jira/log_dir:/opt/atlassian/jira/logs \
+-e CATALINA_OPTS='-Xms512m -Xmx2g' \
+-e X_PROXY_NAME='jira.ourcompany.com' \
+-e X_PROXY_PORT='443' \
+-e X_PROXY_SCHEME='https' \
+jira:7.3.7_1
+
+stat: cannot stat ‘/opt/atlassian/jira/conf/server.xml’: No such file or directory
+/docker-entrypoint.sh: line 6: [: : integer expression expected
+
+docker run -d --name confluence_confluence   -p 7000:8090  \
+ -v /home/produbanuser/conf/server.xml:/opt/atlassian/confluence/conf/server.xml  \
+ -v /home/produbanuser/conf/conf_keystore:/opt/atlassian/confluence/conf/conf_keystore  \
+confluence:6.2.2
+
+
+pipeline {
+    agent {label 'maven'}
+    stages {
+        stage ("Get Source Code") {
+            steps {
+                checkout scm
+            }
+        }
+        stage ("Build Code and Deploy to Nexus"){
+            steps {
+                sh 'mvn -B clean deploy -s settings.xml -Dsource.skip=true -Dmdep.skip=true -Djavax.net.ssl.trustStore=nexus.jks -Djavax.net.ssl.trustStorePassword=changeit'
+            }
+        }
+        stage ("Archive artifacts") {
+            steps {
+                archiveArtifacts 'pom.xml,target/*.jar'
+            }
+        }
+    }
+}
+
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
+  
