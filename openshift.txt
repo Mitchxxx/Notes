@@ -1,8 +1,6 @@
 
 
 centos root
-Blueorange79
-
 
 **********open port 8443********
 Centos 7
@@ -90,6 +88,66 @@ oc policy add-role-to-user admin system:serviceaccount:myproject:token-imran
 oc sa get-token token-imran -n myproject
 
 eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJrdWJlcm5ldGVzL3NlcnZpY2VhY2NvdW50Iiwia3ViZXJuZXRlcy5pby9zZXJ2aWNlYWNjb3VudC9uYW1lc3BhY2UiOiJteXByb2plY3QiLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlY3JldC5uYW1lIjoidG9rZW4taW1yYW4tdG9rZW4tZHcxN2siLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC5uYW1lIjoidG9rZW4taW1yYW4iLCJrdWJlcm5ldGVzLmlvL3NlcnZpY2VhY2NvdW50L3NlcnZpY2UtYWNjb3VudC51aWQiOiI3ZDhmY2M2Ny0zMzI0LTExZTctYTZlZS04Mjk4ZDg3ZDY0MTMiLCJzdWIiOiJzeXN0ZW06c2VydmljZWFjY291bnQ6bXlwcm9qZWN0OnRva2VuLWltcmFuIn0.fL3jG5m567Q0TX-tMgPBj_uWohMWmmirYojJ75Jc3FEMln474rhwxIo4hydZggtclVTSRBYlvLZUGuQvbb3TR-JT7j02ylio72U-nHwmACvc4AXsp44oOsfG8REi82hCIGnO1eUm3XUktGMnJoIL_POTBTkNWi4A3bgi1m1FxdTKsrl1j6pFqofxM81Kx8S8xwDfv425dbTFcWqjTeYznSE1MYxTM5jyAThsvvY0kbjo2dqbK_nngn8Ppvmspd1UuanV16rLQPPVxoGi4HIpo6AdPHr1xXicHN4cDEEIqb1yWRcW0CprIxIOe5CdkAZPPk-K6jFIJdbsY7HP34CtjQ
+
+
+************************************************************************************
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  labels:
+    app_name: ${APP_NAME}
+  name: ${APP_NAME}
+spec:
+  accessModes:
+    - ReadWriteMany
+  resources:
+    requests:
+      storage: 2Gi
+
+
+
+oc create -f <filename> -n <project>
+
+add label
+oc process -f <filename> -l name=otherLabel
+
+with param
+oc process --parameters -f <filename>
+
+if template already uploaded
+oc process --parameters -n <project> <template_name>
+oc process <template_name>
+
+
+oc login https://
+oc project dev
+
+oc create -f nexus3-persistent-template
+oc create -f nexus3-persistent-template.yaml
+oc delete dc nexus -n dev
+oc delete route nexus
+
+  120  oc create -f getpersistent.yaml
+  123  oc get pv
+  124  oc login https://api.cap2.paas.gsnetcloud.corp:8443
+  125  oc project hyperloop-dev
+  126  oc get pv
+  127  oc get pv nexus
+  129  oc create -f getpersistent.yaml
+  130  docker images
+  131  oc project
+  132  oc delete template nexus3
+  138  oc delete template nexus3-persistent
+  143  oc create -f nexus3-persistent-template
+  144  oc create -f nexus3-persistent-template.yaml
+  145  oc delete dc test -n dev
+  146  oc delete dc nexus -n dev
+  147  oc delete route nexus
+  148  oc delete dc nexus -n dev
+
+
+oc process -f template_name.yaml --ARG1=valu1, --ARGE
+
 
 
 
