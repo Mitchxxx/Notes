@@ -462,3 +462,47 @@ https://s3.eu-west-2.amazonaws.com/imranawan/webapp.war
 
 
 tcp://192.168.99.100:2376 
+
+
+**************************************************************************
+
+
+docker run -d --name confluence_confluence \
+--link confluence_postgres:confluence_postgres -p 7000:8090 \
+-v /opt/docker-volumes/confluence/uk/confluence/logs:/opt/atlassian/confluence/logs \
+-v /opt/docker-volumes/confluence_uk_prod/uk/confluence/install_dir:/usr/local/atlassian/confluence \
+-v /opt/docker-volumes/confluence/uk/confluence/work_dir:/var/atlassian/confluence \
+-v /opt/docker-volumes/confluence/uk/confluence/server.xml:/opt/atlassian/confluence/conf/server.xml \
+-v /opt/docker-volumes/confluence/uk/confluence/conf_keystore:/opt/atlassian/confluence/conf/conf_keystore \
+confluence:6.2.2
+
+docker run -d --name confluence_postgres -e POSTGRES_DB=confluence -e POSTGRES_USER=conf -e POSTGRES_PASSWORD=conf -v /opt/docker-volumes/confluence_uk_prod/uk/postgresql:/var/lib/postgresql/data postgres:9.5.1
+
+docker run -d --name confluence_postgres \ 
+-e POSTGRES_DB=confluence \
+-e POSTGRES_USER=conf \
+-e POSTGRES_PASSWORD=conf \
+-v /opt/docker-volumes/confluence_uk_prod/uk/postgresql:/var/lib/postgresql/data \
+postgres:9.5.1
+
+/opt/docker-volumes/jira/uk/jira
+
+docker run -d --name jira_jira_uk \
+--link jira_postgres_uk:jira_postgres_uk -p 7002:8080 \
+-v /opt/docker-volumes/jira_uk_prod/uk/jira/log_dir:/opt/atlassian/jira/logs \
+-v /opt/docker-volumes/jira_uk_prod/uk/jira/work_dir:/var/atlassian/jira \
+jira:7.3.7
+
+"Source": "/opt/docker-volumes/jira/uk/jira/log_dir",
+                "Destination": "/opt/atlassian/jira/logs",
+                "Source": "/opt/docker-volumes/jira/uk/jira/work_dir",
+                "Destination": "/var/atlassian/jira"
+
+docker cp server.xml confluence_confluence:/opt/atlassian/confluence/conf/server.xml
+docker cp conf_keystore confluence_confluence:/opt/atlassian/confluence/conf/conf_keystore
+
+docker cp mycontainer:/foo.txt foo.txt
+
+ansible-playbook -i /hosts playbooks/jira.yml --ask-vault --limit xx
+
+
