@@ -36,9 +36,6 @@ change instances in config file and restart container.
 
 docker restart firefox
 
-
-
-
 docker-compose.yml file
 
 hub:
@@ -54,10 +51,137 @@ chrome:
   links:
     - hub
 
-
 docker-compose up
 
 
+*************************************************************************************
+
+
+docker run -d --name selenium-hub \
+-p 4444:4444 \
+selenium/hub
+
+docker run -d --name chrome-node \
+-p 5555:5555 \
+-e SE_OPTS=-host 10.47.0.76 \
+-e HUB_PORT_4444_TCP_ADDR="10.46.0.45" \
+-e HUB_PORT_4444_TCP_PORT="4444" \
+selenium/node-chrome
+-e REMOTE_HOST="http://10.47.0.76:5555" \
+
+docker run -d --name chrome-node --link selenium-hub:hub selenium/node-chrome
+docker run -d --name chrome-node --link selenium-hub:hub registry.santanderuk.gs.corp:5000/alm/chromenode:v1
+
+docker build --build-arg HTTP_PROXY=http://107.15.40.4:80 --build-arg HTTPS_PROXY=http://107.15.40.4:80 -t chrome-node .
+
+docker run -d --name ff-node --link selenium-hub:hub selenium/node-firefox
+
+
+mvn clean install -DskipTests
+mvn test -Dsurefire.suiteXmlFiles=testng.xml
+
+
+docker run -d --name selenium-hub \
+-p 4444:4444 \
+selhub:v1
+
+
+docker stack deploy -c selenium-grid.yml alm
+
+version: '3'
+services:
+  sel-hub:
+    image: "selhub:v1"
+    networks:
+      alm_default:
+    ports:
+      - "4444:4444"
+    deploy:
+      mode: replicated
+      replicas: 1
+      labels:
+        - "[app=sel-hub]"
+        - "traefik.port=4444"
+        - "traefik.docker.network=alm_default"
+        - "traefik.frontend.rule=Host:dns"
+      restart_policy:
+        condition: "on-failure"
+
+  sel-chrome-node:
+    image: "chromenode:v1"
+    networks:
+      alm_default:
+    environment:
+      SE_OPTS: "-host ip_address:4444/grid/register"
+      HUB_PORT_4444_TCP_ADDR: "10.46.1.49"
+      HUB_PORT_4444_TCP_PORT: "4444"
+    depends_on:
+        - sel-hub
+    ports:
+       - "5555:5555"
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: "on-failure"
+      placement:
+        constraints: [node.labels.product == sel-chrome]
+
+docker node update --label-add product=sel-chrome machine-name
+docker node update --label-add product=sel-hum machine-name
+
+
+  sel-firefox-node:
+    image: "firefoxnode:v1"
+    networks:
+      alm_default:
+    ports:
+       - "5566:5555"
+    environment:
+         SE_OPTS: "-host ip_address:4444/grid/register"
+         HUB_PORT_4444_TCP_ADDR: "ip_address"
+         HUB_PORT_4444_TCP_PORT: "4444"
+    depends_on:
+        - sel-hub
+    deploy:
+      mode: replicated
+      replicas: 1
+      restart_policy:
+        condition: "on-failure"
+
+networks:
+  alm_default:
+    external: true
+
+         SE_OPTS: "-host ip_address:4444/grid/register
+
+    docker run -d --name chrome-node \
+    -p 5555:5555 \
+    -e SE_OPTS=-host 10.47.0.76 \
+    -e HUB_PORT_4444_TCP_ADDR="ip_address" \
+    -e HUB_PORT_4444_TCP_PORT="4444" \
+    selenium/node-chrome
+    -e REMOTE_HOST="http://10.47.0.76:5555" \
+
+    docker run -d --name chrome-node --link selenium-hub:hub node-chrome-v2
+
+    docker run -d --name ff-node -p 5566:5555--link selenium-hub:hub firefoxnode:v1
+
+
+rmaven-docker-slave:v1
+
+
+FROM selenium/node-firefox
+MAINTAINER
+
+ENV http_proxy=http://:80 \
+    https_proxy=http://:80
+
+RUN export http_proxy=$HTTP_PROXY; export https_proxy=$HTTPS_PROXY
+
+USER seluser
+
+CMD ["/opt/bin/entry_point.sh"]
 
 
 
