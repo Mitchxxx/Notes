@@ -22,12 +22,9 @@ node {
    }
 }
 
-imran_token
-yehrXN7k2FMrEx56xokW
 
 withCredentials([string(credentialsId: 'mytoken', variable: 'TOKEN')]) {
 
-srvalmivlsk00.santanderuk.pre.corp
 
 DOCKER_OPTS="-H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock"
 
@@ -49,7 +46,6 @@ node('jenkins-slave'){
     }
     //step([$class: 'CucumberReportPublisher', fileExcludePattern: '', fileIncludePattern: 'combined.json', ignoreFailedTests: true, jenkinsBasePath: '', jsonReportDirectory: 'target/cucumber/threads', missingFails: true, parallelTesting: false, pendingFails: true, skippedFails: true, undefinedFails: true])
 }
-
 
 
 
@@ -94,9 +90,6 @@ node {
 }
 
 
-
-
-
 node {
         
         stage "build" {
@@ -116,3 +109,30 @@ node {
         }
     }
 }
+
+
+    stage('clone repo') {
+          checkout([$class: 'GitSCM', branches: [[name: 'jenkins']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[credentialsId: 'auth-id', url: 'https://xx.git']]])
+          sh "git rev-parse HEAD > .git/commit-id"
+          def commit_id = readFile('.git/commit-id').trim()
+          println commit_id
+      }
+
+      //build the jenkins image based on Dockerfile inside jenkins folder.
+      stage('build') {
+           def app = docker.build('registry.santanderuk.gs.corp:5000/alm/jenkins', 'jenkins')
+      }
+
+      //Simple test to see if image is built
+      stage('Test image') {
+              app.inside("-u root:root") {
+                  echo 'Tests passed'
+              }
+      }
+
+      stage ('publish') {
+          docker.withRegistry('https://registry', 'docker-registry-credential-id') {
+          app.push("${commit_id}")
+          app.push("latest") }
+      }
+
