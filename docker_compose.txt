@@ -182,3 +182,95 @@ $ docker-compose scale chrome=15 firefox=15
 Around 10 seconds later, 30 selenium instances up and running. Sweet.
 
 
+********************************STACK********************************
+
+
+version: '3'
+
+services:
+
+  portainer:
+    image: portainer/portainer
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 9000:9000
+    deploy:
+      placement:
+        constraints: [node.role == manager]
+
+
+        version: '3'
+         services:
+          jenkins-service:
+            image: jenkins:1.0.0
+            networks:
+              - alm_default
+            volumes:
+              - /opt/docker-volumes/jenkins/v4/jenkins_home:/var/lib/jenkins
+              - /var/run/docker.sock:/var/run/docker.sock
+            ports:
+              - 8088:8080
+              - 8089:50000
+            environment:
+              - JENKINS_URL=
+              - JENKINS_EMAIL=
+              - GITLAB_URL=
+              - GITLAB_API_TOKEN=
+              - SWARM_MASTER_URL=tcp://
+              - DOCKER_SLAVES_VOLUMES_ROOT=
+              - NEXUS_BASE_URL=
+              - NEXUS_MAVEN_GROUP=/repository/maven-public
+              - NEXUS_MAVEN_RELEASES=/repository/maven-releases
+              - NEXUS_MAVEN_SNAPSHOTS=/repository/maven-snapshots
+              - MAVEN_DEPLOYER_LOGIN=
+              - MAVEN_DEPLOYER_PASSWD=
+              - JAVA_OPTS=-Dhudson.model.ParametersAction.keepUndefinedParameters=true
+              - TZ=Europe/London
+              - no_proxy=
+              - LDAP_SERVER=
+              - LDAP_BASE=
+              - LDAP_USER_SEARCH=
+              - LDAP_BIND_DN=
+              - LDAP_DISPLAY_NAME=
+              - LDAP_PASSWORD=
+              - LDAP_USER_GROUPS=
+              - LDAP_PROMOTER_GROUPS=
+              - LDAP_GROUP_FILTER=
+              - LDAP_GROUP_BASE=
+              - LDAP_ADMIN_GROUPS=
+              - DOCKER_REGISTRY_USERNAME=
+              - DOCKER_REGISTRY_PASSWORD=
+            deploy:
+              replicas: 1
+              labels:
+                  - traefik.docker.network=alm_default
+                  - traefik.port=8080
+                  - traefik.frontend.rule="Host:jenkins-v2.corp"
+                  - traefik.enable=true
+            placement:
+                constraints: [node.labels.product==jenkins]
+            networks:
+               default:
+                  external: false
+               alm_default:
+                  external: true
+
+
+        docker node update --label-add product=mattermost machine-name
+
+        docker service create --name jenkins-service \
+        --constraint 'node.labels.product==jenkinsalm' \
+        --network alm_default \
+        --mount type=bind,source=/opt/docker-volumes/jenkins/v3/jenkins_home,target=/var/lib/jenkins \
+        --label traefik.docker.network=alm_default  \
+        --label 'traefik.port=8081' \
+        --label traefik.frontend.rule="Host:connect-jenkins.corp" \
+        --label 'traefik.enable=true' -p 8087:8081 -p 8086:8086 \
+        --env-file ./env.list registry.santanderuk.gs.corp:5000/alm/jenkins
+
+
+docker stack deploy -c selenium-grid.yml alm
+
+docker stack deploy -c docker-compose-stack-monitoring.yml monitoring
+
