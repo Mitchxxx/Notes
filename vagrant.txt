@@ -1,9 +1,76 @@
 
 
-***********INSTALL VAGRANT ON CENTOS************
+***********ANSIBLE************
+
+playbook
+
+---
+- hosts: env.app-namge.tenants
+  roles:
+    - { role: role-name,
+        tags: [ 'deployment', 'role-name' ] }
 
 
 
+s3 playbook
+
+- name: set the backup path based on alm app to back up e.g confluece, jira etc
+  set_fact:
+    backup_path: "{% if app == 'confluence' %} '{{ docker_volumes }}/{{ confluence_docker_name }}/{{ confluence_tenant }}/' 
+                  {% elif app == 'jira' %} '{{ docker_volumes }}/{{ jira_docker_service_name }}/{{ jira_tenant }}/' {% endif %}"
+
+- name: set data stamp
+  set_fact:
+    timestamp: "{{ lookup('pipe', 'date +%Y%m%d%H%M%SZ') }}"
+
+
+- name: concatanate the s3 app paths
+  set_fact:
+   s3_backup_path: "{{ s3_backup_path_root }}{{ app }}_{{ timestamp }}"
+
+
+- name: Creates s3 backup directory
+  file:
+    path: "{{ s3_backup_path }}"
+    state: directory
+    mode: 0775
+  become: yes
+  become_method: sudo
+
+- name: Copy the data to be backed up to the s3 backup folder
+  command: "cp -r {{ backup_path }} {{ s3_backup_path}}"
+  become: yes
+  become_method: sudo
+
+- easy_install:
+    name: pip
+
+- name: install boto
+  pip: name=boto
+  become: yes
+  become_method: sudo
+
+
+#- name: Simple PUT operation
+#  s3:
+   # aws_access_key: "{{aws_access_key_id}}"
+   # aws_secret_key: "{{aws_secret_access_key}}"
+#    bucket: alm1
+#    object: "{{ app  }}-{{ timestamp }}"
+#    src: "{{ s3_backup_path }}"
+#    mode: put
+#  become: yes
+#  become_method: sudo 
+
+#- name: navigate to s3 backup dir 
+#  command: "cd {{ s3_backup_path_root }}"
+    
+- name: upload to s3
+  shell: "s3cmd put -r {{ s3_backup_path }} s3://bucket-name/{{ app }}_{{ time_stamp }}"
+  register: shell_result
+    
+- debug: 
+   var: shell_result.stdout_lines
 
 
 ***********INSTALL VAGRANT ON UBUNTU***************
