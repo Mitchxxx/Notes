@@ -1,7 +1,124 @@
 
+1) Install vagrant and ansible on your host. 
+
+2) Vagrantfile 
+
+Once you have vagrant installed, create a Vagrantfile that creates a Ubuntu VM and uses ansible to provision the installation of docker via a playbook. 
+   
+
+After creating a ubuntu vm, notice the line 'docker-install.yml' which runs the 'docker-install.yml' playbook
+
+
+(4) Launch VM
+
+To launch the VM with ansible provisioning run 'vagrant up'
+
+(5) Access VM
+
+When launching the VM, vagrant creates a private key in the following default directory, which can be used to authenticate against the VM as the default vagrant user.
+
+~/.vagrant.d/insecure_private_key
+
+Execute the following ssh command to connect to the VM
+
+ ssh -i ~/.vagrant.d/insecure_private_key vagrant@192.168.50.4
+
+
+1.13.3-1
+
+
+html_host_dir: /home/vagrant/html
+docker_image_name: nginx
+docker_container_name: nginx
+
+
+**********************************************************
+docker run --name nginx -d -v /home/vagrant/html:/usr/share/nginx/html -p 8080:80 nginx:latest
+
+
+  config.vm.provision :file do |file|
+    file.source      = '~/.html'
+    file.destination = '/home/vagrant/html'
+  end
+
+
+
+
+   - name: logging in example
+      docker_login:
+        username: "my_username"
+        password: "some_password"
+        email: "my_email@example.com"
+        reauthorize: yes
+    - name: pulling images example
+      docker_image:
+        name: "{{ item }}"
+      with_items: "{{ docker_hub_images }}"
+
+
+
+ tasks:
+
+  - name: pull the OS image
+    docker_container:
+      name: my-test-container
+      image: python:2.7
+      state: started
+      command: ["sleep", "600"]
+
+
+
+db.vm.network :forwarded_port, guest: 3306, host: 8206
+
+
+
+
+
+
+ ssh -p 2222 -i /home/imran/.vagrant.d/insecure_private_key vagrant@127.0.0.1
+
+
+
+- hosts: default
+  become: true
+
+  tasks:
+    - name: ensure repository key is installed
+      apt_key:
+        id: "58118E89F3A912897C070ADBF76221572C52609D"
+        keyserver: "hkp://p80.pool.sks-keyservers.net:80"
+        state: present
+
+    - name: ensure docker registry is available
+      # For Ubuntu 14.04 LTS, use this repository:
+      apt_repository: repo='deb https://apt.dockerproject.org/repo ubuntu-trusty main' state=present
+
+    - name: ensure docker and dependencies are installed
+      apt: name=docker-engine update_cache=yes
+
+    # Uncomment the following to enable insecure registries with Docker
+    #- name: ensure docker can use insecure registries in 10.11.0.0/16
+    #  lineinfile: "dest=/etc/default/docker regexp=^DOCKER_OPTS line=DOCKER_OPTS='--insecure-registry 10.11.0.0/16'"
+
+
+
+---
+- name: Hello World!
+  hosts: localhost
+
+  tasks:
+
+  - name: Hello World!
+    shell: echo "Hi! Tower is working."
+
+
+
+
+
 
 ***********ANSIBLE************
 
+<<<<<<< Updated upstream
 playbook
 
 ---
@@ -9,6 +126,36 @@ playbook
   roles:
     - { role: role-name,
         tags: [ 'deployment', 'role-name' ] }
+=======
+# Some notes from installing VirtualBox on CentOS 7. 
+# These exact steps haven't been tested, as I ran them in a different order when manually installing.
+
+# Install dependencies
+yum -y install gcc make patch  dkms qt libgomp
+yum -y install kernel-headers kernel-devel fontforge binutils glibc-headers glibc-devel
+
+# Install VirtualBox
+cd /etc/yum.repos.d
+wget http://download.virtualbox.org/virtualbox/rpm/rhel/virtualbox.repo
+yum install VirtualBox-5.0
+
+# Check that you have the kernel sources downloaded for your running kernel version (if they don't match you might need to yum update and reboot)
+ls /usr/src/kernels/
+uname -r
+
+# Build the VirtualBox kernel module 
+export KERN_DIR=/usr/src/kernels/$(uname -r)
+/sbin/rcvboxdrv setup
+
+# Install Vagrant
+yum -y install https://releases.hashicorp.com/vagrant/1.8.1/vagrant_1.8.1_x86_64.rpm
+
+# Test Vagrant
+mkdir ~/test-vagrant
+cd ~/test-vagrant
+vagrant init ubuntu/trusty64
+vagrant up
+>>>>>>> Stashed changes
 
 
 

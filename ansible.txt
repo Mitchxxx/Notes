@@ -1,4 +1,4 @@
-
+v
 
 ansible -i dev --list-hosts all
 ansible -i dev --list-hosts "*"

@@ -16,9 +16,15 @@
 
    docker swarm init --advertise-addr 192.168.99.103
 
+<<<<<<< Updated upstream
      docker swarm join \
       --token SWMTKN-1- \
       192.168.99.103:2377
+=======
+
+docker swarm join --token SWMTKN-1-2ikjuxbp0qebm5kfdxsnbyoqierk8hgh61zqyou0wjb8o9eoo8-4o89pryz53q6xb138kn2t8dkq 192.168.99.100:2377
+
+>>>>>>> Stashed changes
 
    docker service create --replicas 5 -p 80:80 --name web nginx
    docker service ps web
@@ -104,6 +110,7 @@
       --label com.df.servicePath=/jenkins \
       --label com.df.port=8888 \
        jenkins:2.7.4-alpine
+
   docker node update --label-add bar=baz worker1
 
   docker service create --name nexus-service \
@@ -139,8 +146,60 @@
       --web
 
 
+docker service create --name traefik --constraint=node.role==manager --publish 80:80 --publish 8080:8080 --mount type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock --mount "type=bind,source=/home/docker/traefic.toml,target=/etc/traefik/traefik.toml --network proxy-network traefik --docker --docker.swarmmode --docker.domain=traefik --docker.watch --logLevel=DEBUG --web
 
-  docker service create --name nexus-service \
+
+
+traefik:
+  image: traefik
+  command: --web --docker --docker.domain=docker.localhost --logLevel=DEBUG
+  ports:
+    - "80:80"
+    - "8080:8080"
+    - "443:443"
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /dev/null:/traefik.toml
+
+
+docker-compose.yml
+
+traefik:
+  image: traefik
+  command: --web --docker --docker.domain=docker.localhost --logLevel=DEBUG
+  ports:
+    - "80:80"
+    - "8080:8080"
+    - "443:443"
+  volumes:
+    - /var/run/docker.sock:/var/run/docker.sock
+    - /dev/null:/traefik.toml
+
+machine:
+  image: katacoda/docker-http-server
+  labels:
+    - "traefik.backend=machine-echo"
+    - "traefik.frontend.rule=Host:machine-echo.example.com"
+
+echo:
+  image: katacoda/docker-http-server:v2
+  labels:
+    - "traefik.backend=echo"
+    - "traefik.frontend.rule=Host:echo-echo.example.com"
+
+
+
+    
+
+
+  docker service create --name n
+  docker service create --name swarm-listener \
+  --network proxy-network \
+  --constraint 'node.role==manager' \
+  --mount "type=bind,source=/var/run/docker.sock,target=/var/run/docker.sock" \
+  -e DF_NOTIFY_CREATE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/reconfigure \
+  -e DF_NOTIFY_REMOVE_SERVICE_URL=http://192.168.99.100:8080/v1/docker-flow-proxy/remove --constraint 'node.role==manager' \
+  vfarcic/docker-flow-swarm-listenerexus-service \
     --network proxy-network \
     --label traefik.port=8081 \
     --label traefik.frontend.rule="Host:nexus.imran.traefik"\

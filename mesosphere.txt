@@ -1,0 +1,13 @@
+Mesos
+
+https://mesosphere.com/amazon/
+
+DC/OC 
+
+1 master node
+1 public agent node
+2 private agent nodes - run dc/oc apps through non-routable network that is only accessible from the admin zone or edge router of the public zone.
+
+* By default dc/oc launches apps on private nodes
+* dc/oc nodes can be designated as private or public duering installation
+* public nodes run dc/oc apps and services in a public accessible network

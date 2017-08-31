@@ -1,3 +1,92 @@
+docker run -d --name jenkins -p 8888:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /root/jenkins_home:/var/jenkins_home imranawan/jenkins
+
+
+Exposing docker daemon
+tcp://46.101.93.229:4243
+
+CentOS 7 (RHEL 7):
+
+Find the systemd docker.service unit file. Mine is located at: /usr/lib/systemd/system/docker.service
+
+In this file, edit the line in the [Service] section beginning with ExecStart=. Add the "-H tcp://0.0.0.0:4243" into the line. (notice there's no "=" between the -H and the IP address as in your example DOCKER_OPTS line above.)
+
+On my system, the entire contents of docker.service then looks like:
+
+[Unit]
+Description=Docker Application Container Engine
+Documentation=http://docs.docker.com
+After=network.target docker.socket
+Requires=docker.socket
+
+[Service]
+Type=notify
+EnvironmentFile=-/etc/sysconfig/docker
+ExecStart=/usr/bin/docker -d -H tcp://127.0.0.1:4243 -H fd:// $OPTIONS
+LimitNOFILE=1048576
+LimitNPROC=1048576
+
+[Install]
+Also=docker.socket
+(I only need Docker to listen on the loopback, instead of all IP addresses.)
+
+After making this edit to the systemd unit file and restarting the Docker service via systemctl restart docker, I see the following process:
+
+root      8574  0.0  0.2 321708 10564 ?        Ssl  00:42   0:00 /usr/bin/docker -d -H tcp://127.0.0.1:4243 -H fd:// --selinux-enabled
+
+As you can see, it does now listen on the configured TCP address, and will persist over reboots and service stop/starts.
+
+
+sudo systemctl daemon-reload //refresh your file changes above
+sudo systemctl restart docker
+
+netstat -l | grep 4243 //verify port is open
+ip address show docker0 //get the internal ip address of the docker host
+connect to your docker host from somewhere, like Jenkins Docker Plugin, i.e. tcp://172.17.0.1:4243
+
+
+Ubuntu
+http://www.virtuallyghetto.com/2014/07/quick-tip-how-to-enable-docker-remote-api.html
+
+If you have Docker running on an Ubuntu (14.04 is what I'm using), you will need to edit /etc/init/docker.conf and update the DOCKER_OPTS variable to the following:
+
+
+DOCKER_OPTS='-H tcp://0.0.0.0:4243 -H unix:///var/run/docker.sock'
+
+
+
+
+[07/15/17 13:06:31] [SSH] Opening SSH connection to 46.101.93.229:32770.
+[07/15/17 13:06:31] [SSH] WARNING: SSH Host Keys are not being verified. Man-in-the-middle attacks may be possible against this connection.
+[07/15/17 13:06:31] [SSH] Authentication failed.
+Authentication failed.
+[07/15/17 13:06:31] Launch failed - cleaning up connection
+[07/15/17 13:06:31] [SSH] Connection closed.
+
+
+USER root
+adduser jenkins
+
+
+# Step 1: Create private key and public key
+#ssh-keygen -t rsa -C "The access key for the slave Jing"
+ssh-keygen -f id_rsa -t rsa -N ''
+cat id_rsa.pub > ~/.ssh/authorized_keys
+
+
+CMD ssh-keygen -q -t rsa -N '' -f id_rsa && chmod 700 $KEY_GEN_PATH && chmod 600 /*
+
+
+Output:
+private key: id_rsa         # copy to master 
+public key: id_rsa.pub    # copy to slave (.ssh/authorized_keys)
+
+# Step 2: Setup Authorized key
+  slave:~$ cat id_rsa.pub > ~/.ssh/authorized_keys
+
+
+
+
+
 Expose docker daemon: 
  dockerd -H tcp://0.0.0.0:2375 -H unix:///var/run/docker.sock
 
@@ -98,6 +187,8 @@ docker run -it test
 
 **************Install Docker on Ubuntu*******************
 
+
+
 sudo apt-get install docker.io
 
 sudo docker daemon start
@@ -136,7 +227,7 @@ docker run -t -i ubuntu /bin/bash
 
 docker tag image_id imranawan/nameOfimage
 docker ps - queries the daemon for info on the containers 
-docker run -d ubuntu /bin/sh -c "while true; do echo hello world; sleep 1; done" - runs container in background
+docker run -d ubuntu /bin/sh -c "while true; do echo hello world; sleep 1; done" - runs container in backgroundforce
 docker stop container_name
 docker rmi imagename
 docker rm --force `docker ps -qa`

@@ -180,7 +180,56 @@ LINUX BOOT PROCESS
 - Linux Kernels
 - Runlevels
 
-************INSTALL OPEN SHIFT**************
+
+
+view kernel logs
+/var/log/dmesg
+
+PARTITIONS
+
+df -h 
+
+fdisk -l | less (view partitions)
+fdisk /dev/vda
+
+to create new partition enter 'n'
+
+
+FILE SYSTEMS
+
+To create file system
+
+mkfs -t TYPE DEVICE
+mkfs -t ext3 /dev/sdb2
+mkfs -t ext4 /dev/sdb2
+mkfs -t ext4 /dev/sdb3
+mkfs.ext4 /dev/sdb3
+
+ls -1 /sbin/mkfs*
+
+to mount
+
+mount DEVICE MOUNT_POINT
+mount /dev/sdb3 /opt
+
+In order to make mount persist and an entry in the /etc/fstab file
+
+umount /opt
+umount /dev/sdb3
+
+create swap
+
+mkswap /dev/sdb1
+swapon /dev/sdb1
+swapon -s
+
+/etc/fstab - controls what devices get mounted and where on the boot
+
+- each entry is made of 6 fields
+
+device, mount point, file system type, mount options, dump, fsck order
+
+
 
 
 

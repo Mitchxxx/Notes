@@ -1,3 +1,172 @@
+
+node('maven') {
+   
+    
+   stage('clone') {
+      git 'https://github.com/imranfawan/WebApp.git'
+   }
+  
+   stage('build-compile-code') {
+      sh "mvn clean install"
+      sh "jar cvf webapp.war ."
+   }
+   
+   stage('unit-test-report') {
+      //archive "target/**/*"
+      junit '**/target/surefire-reports/TEST-*.xml'
+   }
+   
+   stage('deploy-nexus') {
+       sh 'mvn --settings settings.xml deploy'
+   }
+   
+}
+
+node('docker') {
+
+   stage('clone') {
+      git 'https://github.com/imranfawan/WebApp.git'
+   }
+   
+   stage('build-app-image') {
+       
+     sh "git rev-parse HEAD > .git/commit-id"
+     def commit_id = readFile('.git/commit-id').trim()
+     println commit_id
+     def app = docker.build('imranawan/webserver', '.')
+     // app.inside("-u root -e DOCKER_REMOTE_API='unix:///var/run/docker.sock'")
+          
+    docker.withRegistry('https://index.docker.io/v1/', 'docker-registry-id') {
+    app.push 'master'
+    app.push "${commit_id}" }       
+       
+   }
+   
+}
+
+********************************************************************
+
+node('maven') {
+   //def mvnHome
+   stage('clone') { // for display purposes
+      // Get some code from a GitHub repository
+      
+      git 'https://github.com/imranfawan/WebApp.git'
+      // Get the Maven tool.
+      // ** NOTE: This 'M3' Maven tool must be configured
+      // **       in the global configuration.           
+    //  mvnHome = tool 'M3'
+   }
+  
+   stage('build-compile-code') {
+      // Run the maven build
+    //     sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean package"
+      sh "mvn clean install"
+   }
+   stage('junit-results') {
+      junit '**/target/surefire-reports/TEST-*.xml'
+      //archive 'target/*.jar'
+   }
+}
+
+
+
+node('docker') {
+   
+   stage('clone') { 
+     git 'https://github.com/imranfawan/WebApp.git'
+   }
+   
+   stage('build-app-image') { 
+      def app = docker.build('imranawan/webserver', '.')
+   }
+  
+}
+
+********************************************************************
+
+
+
+
+
+
+
+
+node {
+   def mvnHome
+   def app
+   def commit_id
+   def container
+   stage('Preparation') { 
+      // Get some code from a GitHub repository
+      git 'https://github.com/imranfawan/CucumberJavaSelenium.git'
+         
+      mvnHome = tool 'M3'
+   }
+  
+   
+   stage('build-code') {
+      // Run the maven build
+         sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore clean install -DskipTests"
+         sh "git rev-parse HEAD > .git/commit-id"
+         commit_id = readFile('.git/commit-id').trim()
+         println commit_id
+     //publish unit tests
+    //  step([$class: 'JUnitResultArchiver', testResults: '**/target/surefire-reports/*.xml'])
+    
+   }
+   
+   stage('execute-tests') {
+      // Execute tests. 
+         sh "'${mvnHome}/bin/mvn' -Dmaven.test.failure.ignore test -Dbrowser-firefox"
+    
+   }
+   
+ 
+  
+   
+   stage('Results') {
+         junit 'target/junit-report/cucumber-*.xml'
+    //     archive 'target/*.jar'
+   }
+   
+}
+
+
+
+node {
+
+        git url: 'https://github.com/imranfawan/WebApp.git', branch: 'master'
+
+          sh "git rev-parse HEAD > .git/commit-id"
+          def commit_id = readFile('.git/commit-id').trim()
+          println commit_id
+          def app = docker.build('imranawan/webserver', '.')
+         // app.inside("-u root -e DOCKER_REMOTE_API='unix:///var/run/docker.sock'")
+     
+          
+            docker.withRegistry('https://hub.docker.com', 'docker-registry-id') {
+             app.push 'master'
+             app.push "${commit_id}" }
+          
+}
+docker run -d --name jenkins -p 8888:8080 -p 50000:50000 -v /var/run/docker.sock:/var/run/docker.sock -v /tmp/jenkins:/var/lib/jenkins jenkins-alpine
+docker run -d --name jenkins2 -p 8087:8080 -p 8086:50000 -v /var/run/docker.sock:/var/run/docker.sock jenkins-alpine
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 node {
    def mvnHome
    stage('Preparation') { // for display purposes

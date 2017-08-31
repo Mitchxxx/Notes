@@ -1,6 +1,403 @@
 elk
 
 
+PUT /customers/online/123
+{
+   "name": "Joe Swanson",
+   "gender": "male",
+   "age": 30,
+   "total_spent": 275.50,
+   "is_new": false
+}
+
+PUT /customers
+{
+ "settings": {
+   "number_of_shards": 2,
+   "number_of_replicas": 1
+ },
+ "mappings": {}
+}
+
+PUT /customers/_mapping/in-store
+{
+  "properties": {
+    "name": {
+      "type": "text",
+      "analyzer": "standard"
+    }
+  }
+}
+
+GET /customers/_mapping/online
+{
+ "properties":{
+   "gender": {
+      "type": "text",
+      "analyzer": "standard"
+   },
+  "age": {
+      "type": "integer"
+   },
+   "total_spent": {
+      "type": "float"
+   },
+   "is_new": {
+      "type": "boolean"
+   }
+  }
+}  
+
+
+PUT /customers
+{
+  "mappings": {
+    "online": {
+    "properties": {
+     "gender": {
+       "type": "text",
+        "analyzer": "standard"
+     },
+    "age": {
+        "type": "integer"
+     },
+     "total_spent": {
+        "type": "float"
+     },
+     "is_new": {
+        "type": "boolean"
+     },
+     "name": {
+        "type": "text",
+        "analyzer": "standard"
+     }
+    }
+  }
+    
+  },
+  "settings": {
+     "number_of_shards": 2,
+     "number_of_replicas": 1
+  }
+}
+
+--------------
+
+PUT customers/online/124
+{
+  "name": "Mary Cranford",
+  "address": "310 Clark Ave",
+  "gender": "female",
+  "age": "34",
+  "total_spent": "550.75",
+  "is_false": false
+}
+
+GET customers/_mappings/online
+{
+  "dynamic": "strict"
+}
+
+POST _analyze
+{
+  "analyzer": "whitespace",
+  "text": "The quick brown fox."
+}
+
+
+GET /courses/_search
+{
+  "query": {
+     "match_all": {}
+  }
+}
+
+GET /courses/_search
+{
+  "query": {
+     "match": {"name" : "computer"}
+  }
+}
+
+GET /courses/_search
+{
+  "query": {
+     "exists": {"field" : "professor.email"}
+  }
+}
+
+PUT /courses/classroom/7
+{
+    "name": "Computer Internals 250",
+    "room": "C8",
+    "professor": {
+        "name": "Gregg Payne",
+        "department": "engineering",
+        "facutly_type": "part-time",
+        "email": "payneg@onuni.com"
+        },
+    "students_enrolled": 33,
+    "course_publish_date": "2012-08-20",
+    "course_description": "cpt Int 250 gives students an integrated and rigorous picture of applied computer science, as it comes to play in the construction of a simple yet powerful computer system. "
+}
+
+
+
+GET /courses/_search
+{
+  "query": {
+    "bool" : {
+      "must":[
+       {"match": {"name": "accounting"}}
+      ],
+       "must_not":[
+       {"match": {"professor.name": "bill"}}
+      ],
+      "should" :[
+       {"match": {"room": "e7"}}
+      ]
+    }
+  }
+}
+
+
+GET /courses/_search
+{
+  "query": {
+    "multi_match": {
+      "query": "accounting",
+      "fields": ["name", "professor.department"]
+    }
+ }
+}
+
+
+GET /courses/_search
+{
+  "query": {
+    "match_phrase": {
+      "course_description": "Cst Act 400 is an advanced course from"
+    }
+ }
+}
+
+GET /courses/_search
+{
+  "query": {
+     "range": {
+         "students_enrolled": {
+           "gte": 10,
+           "lte": 20
+         }
+     }
+    } 
+}
+
+
+GET /courses/_search
+{
+  "query": {
+     "bool": {
+         "filter": {
+           "match":{"name": "accounting"}
+         }
+     }
+    } 
+}
+
+
+GET /courses/_search
+{
+  "query": {
+     "bool": {
+         "filter": {
+           "bool": {
+             "must":[
+               { "match": {"professor.name": "bill"}},
+               { "match": {"name": "accounting"}}  
+              ],
+              "must_not":[
+              {"match": {"room": "e7"}}             ]
+           }        
+         }
+     }
+    } 
+}
+
+if use filter then no score
+
+GET /courses/_search
+{
+  "query": {
+     "bool": {
+         "filter": {
+           "bool": {
+             "must":[
+               { "match": {"professor.name": "bill"}},
+               { "match": {"name": "accounting"}}  
+              ]
+           }        
+         },
+         
+      "must":[
+        { "match": {"room": "e3"}}  
+        ]
+     }
+    } 
+}
+
+
+POST /vehicles/cars/_bulk
+{ "index": {}}
+{ "price" : 10000, "color" : "white", "make" : "honda", "sold" : "2016-10-28", "condition": "okay"}
+{ "index": {}}
+{ "price" : 20000, "color" : "white", "make" : "honda", "sold" : "2016-11-05", "condition": "new" }
+{ "index": {}}
+{ "price" : 30000, "color" : "green", "make" : "ford", "sold" : "2016-05-18", "condition": "new" }
+{ "index": {}}
+{ "price" : 15000, "color" : "blue", "make" : "toyota", "sold" : "2016-07-02", "condition": "good" }
+{ "index": {}}
+{ "price" : 12000, "color" : "green", "make" : "toyota", "sold" : "2016-08-19" , "condition": "good"}
+{ "index": {}}
+{ "price" : 18000, "color" : "red", "make" : "dodge", "sold" : "2016-11-05", "condition": "good"  }
+{ "index": {}}
+{ "price" : 80000, "color" : "red", "make" : "bmw", "sold" : "2016-01-01", "condition": "new"  }
+{ "index": {}}
+{ "price" : 25000, "color" : "blue", "make" : "ford", "sold" : "2016-08-22", "condition": "new"  }
+{ "index": {}}
+{ "price" : 10000, "color" : "gray", "make" : "dodge", "sold" : "2016-02-12", "condition": "okay" }
+{ "index": {}}
+{ "price" : 19000, "color" : "red", "make" : "dodge", "sold" : "2016-02-12", "condition": "good" }
+{ "index": {}}
+{ "price" : 20000, "color" : "red", "make" : "chevrolet", "sold" : "2016-08-15", "condition": "good" }
+{ "index": {}}
+{ "price" : 13000, "color" : "gray", "make" : "chevrolet", "sold" : "2016-11-20", "condition": "okay" }
+{ "index": {}}
+{ "price" : 12500, "color" : "gray", "make" : "dodge", "sold" : "2016-03-09", "condition": "okay" }
+{ "index": {}}
+{ "price" : 35000, "color" : "red", "make" : "dodge", "sold" : "2016-04-10", "condition": "new" }
+{ "index": {}}
+{ "price" : 28000, "color" : "blue", "make" : "chevrolet", "sold" : "2016-08-15", "condition": "new" }
+{ "index": {}}
+{ "price" : 30000, "color" : "gray", "make" : "bmw", "sold" : "2016-11-20", "condition": "good" }
+
+
+GET /vehicles/cars/_search
+{
+  "aggs": {
+    "popular_cars": {
+      "terms": {
+          "field": "make.keyword"
+      },
+      "aggs": {
+        "avg_price": {
+           "avg": {
+             "field": "price"
+           }
+        }
+      }
+    }
+  }
+}
+
+AGGS
+
+GET /vehicles/cars/_search
+{
+
+  "query": {
+    "match":{"color": "red"}
+  },
+
+  "aggs": {
+    "popular_cars": {
+      "terms": {
+          "field": "make.keyword"
+      },
+      "aggs": {
+        "avg_price": {
+           "avg": {
+             "field": "price"
+            }
+          },
+         "max_price": {
+         "max": {
+           "field": "price"
+          }
+         },
+        "min_price": {
+         "min": {
+           "field": "price"
+          }
+         }
+      }
+    }
+  }
+}
+
+
+GET /vehicles/cars/_search
+{
+  
+  "size": 0,
+  
+   "query": {
+    "match":{"color": "red"}
+  },
+  
+  "aggs": {
+    "popular_cars": {
+      "terms": {
+          "field": "make.keyword"
+      },
+      "aggs": {
+        "stats_on_price": {
+           "stats": {
+             "field": "price"
+            }
+          }
+      }
+    }
+  }
+}
+
+
+GET /vehicles/cars/_search
+{
+  
+  "size": 0,
+  
+  "aggs": {
+    "condition_cars": {
+      "terms": {
+          "field": "condition.keyword"
+      },
+      "aggs": {
+            "avg_price": {
+              "avg": {
+                 "field": "price"
+              }
+            },
+           "make": {
+              "terms": {
+                "field": "make.keyword"
+              }
+           }
+        }
+    
+      }
+
+      }      
+    
+  }
+  
+
+
+
+docker run -d -p 9200:9200 -p 9300:9300 -it -h elasticsearch --name elasticsearch elasticsearch
+docker run -d -p 5601:5601 -h kibana --name kibana --link elasticsearch:elasticsearch kibana
+
+
 
 https://github.com/vfarcic/cloud-provisioning
 https://github.com/vfarcic/cloud-provisioning/blob/master/conf/logstash.conf
@@ -16,7 +413,7 @@ docker service create \
   --network elk \
   --reserve-memory 500m \
   elasticsearch:2.4
-
+ 
 
 FROM logstash
 

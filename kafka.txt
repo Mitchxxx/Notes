@@ -1,0 +1,102 @@
+
+Messages are categorised into topics
+Topic is similar to db. 
+
+Topics are split into partitions
+ - Each partition is ordered
+ - Each message within a partition gets and incremental id, called offset
+
+ Partition 0 1 2 3 4 5 6
+
+ - Offset only have meaning for an specific partition
+ - Order is guaranteed for a limited time (default is 2 weeks)
+ - Data is kept only for a limited time (default is 2 weeks)
+ - Data is assigned randomely to a partition unless a key is provided 
+ - You can have as many partitions per topic
+
+ BROKERS
+
+ - A kafka cluster consists of brokers (servers)
+ - Each is identified with its id
+ - Each broker contains certain topic partitions
+ - After connecting to any broker, you will be connected to the entire cluster
+ - A good number to get started is 3
+
+ Only 1 broker can serve and consume data for a partition. The rest of brokers sync (ISR) In-sync replica
+
+ PRODUCER
+
+ They only have to specify the topic name and one broker to connect to, and kafka will take care
+ of routing the data to the right brokers
+
+ They only have to specify the topic name and one broker to connect to, and kafka will take care of automatically reading the data
+
+- Consumer will read messages from a partition in sequence and across partition in parallel. 
+- Consumer read data in consumer groups
+- Each consumer within a group reads from exlusive partitions 
+- You cannot have more consumers than partitions
+
+
+Consumer Offsets
+
+
+Zooper keeper
+
+Manages brokers, keeps a list
+
+Elects leaders for partition. 
+Sends notification to kafka in case of (e.g new topic, broker)
+Has leaders and followers
+
+
+--------------------------
+
+docker run --rm -it \ 
+           -p 2181:2181 -p 3030:3030 -p 8081:8081 \
+           -p 8082:8082 -p 8083:8083 -p 9092:9092 \
+           -e ADV_HOST=127.0.0.1 \
+           landoop/fast-data-dev
+
+
+docker run --rm -it -p 2181:2181 -p 3030:3030 -p 8081:8081 -p 8082:8082 -p 8083:8083 -p 9092:9092 -e ADV_HOST=127.0.0.1 landoop/fast-data-dev
+
+
+kafka command line tool
+docker run --rm -it --net=host landoop/fast-data-dev bash
+
+* create topic
+kafka-topics --zookeeper 127.0.0.1:2181 --create --topic first_topic --partition 3 --replication-factor 1
+
+* list topic
+kafka-topics --zookeeper 127.0.0.1:2181 --list
+
+* delete topic
+kafka-topics --zookeeper 127.0.0.1:2181 --topic second_topic --delete
+
+* describe topic
+kafka-topics --zookeeper 127.0.0.1:2181 --describe --topic first_topic
+
+* write to topic
+kafka-console-producer --topic first_topic --broker-list 127.0.0.1:9092
+
+* read data from topic
+ kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic
+
+ kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic nifi_topic
+ 
+ (this will only read new data, so if you push from producer from this point the data will appear )
+
+to read old data do : 
+ kafka-console-consumer --bootstrap-server 127.0.0.1:9092 --topic first_topic --consumer-property group.id=mygroup1 --from-beginning
+
+when we have a consumer and it is part of a group, it will commit offsets to kafka. Now if you run the exact same command it will not show all messages (even with beginning). Because kafka will retrieve offsets as being read. Cannot re-consume messages
+
+
+
+APACHE NIFI
+
+docker run -it --rm -p 8080-8081:8080-8081 mkobit/nifi
+
+
+docker run -d -p 8086:8081 -p 8087:8080 mkobit/nifi
+

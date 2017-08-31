@@ -1,0 +1,30 @@
+
+sudo -R $USER:GROUP /var/lib/cassandra
+
+check process id of cassandra
+ ps aux | grep cass
+
+bin/nodetool status
+bin/nodetool info
+bin/nodetool ring
+
+accessing system.log file
+
+var/log/cassandra/system.log (the location of this file is specfied in conf/log4j-server.properties)
+
+
+CREATE KEYSPACE vehicle_tracker WITH REPLICATION = { 'class' : 'NetworkTopologyStrategy', 'dcl' : 3, 'dc2' : 2};
+CREATE KEYSPACE vehicle_tracker WITH REPLICATION = { 'class' : 'SimpleStrategy', 'replication_factor' : 1};
+
+
+DESCRIBE KEYSPACES;
+
+DROP KEYSPACE vehicle_tracker;
+
+Set default keyspace
+USE home_security
+
+
+
+https://docs.mesosphere.com/service-docs/cassandra/v1.0.25-3.0.10/quickstart/
+

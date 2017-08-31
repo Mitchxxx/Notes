@@ -28,7 +28,7 @@ sudo firewall-cmd --reload
 Now, test Jenkins by visiting the following address from your web browser:
 
 http://<your-Vultr-server-IP>:8080
-
+http://46.101.93.229:8080
 
 Jenkins requires Java in order to run, yet certain distros don't include this by default. To install the Open Java Development Kit (OpenJDK) run the following:
 sudo yum install java
