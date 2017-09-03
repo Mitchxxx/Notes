@@ -12,9 +12,6 @@ AKIAIMM7ZOVCPOLZNGPA
 
 
 
-
-
-
 F78PXQ8SG5MQ
 
 #!/bin/bash
@@ -23,7 +20,7 @@ yum update -y
 #aws s3 cp s3://bucketname/index.html /var/www/html/
 sudo aws s3 cp s3://imranawan /var/www/html/ --recursive --region eu-west-2
 service httpd start
-chkconfig httpd on 
+chkconfig httpd on
 
 
 
@@ -33,13 +30,13 @@ aws s3 mb s3://clusters.dev.imran.com
 kops create cluster --cloud=aws --zones=eu-west-2a imran.click
 kops create cluster --name=kubernetes.imran.click --state=s3://clusters.dev.imran.com --cloud=aws --zones=eu-west-2a --node-count=2 --node-size=t2.micro --master-size=t2.micro --dns-zone=imran.click
 
-to configure 
+to configure
 kops update cluster kubernetes.imran.click --yes --state=s3://clusters.dev.imran.com
 kops edit cluster kubernetes.imran.click
 
 
 
-cloud formation. 
+cloud formation.
 
 Use awscli to crate a stack from template
 
@@ -47,8 +44,8 @@ Use awscli to crate a stack from template
 aws cloudformation create-stack --stack-name ec2stack --template-url https://s3.eu-west-2.amazonaws.com/cf-templates-2hcb881mo1qp-eu-west-2/ec2_stack --parameters ParameterKey=KeyPair,ParameterValue=imran
 
 aws cloudformation update-stack --stack-name ec2stack3 --template-url https://s3.eu-west-2.amazonaws.com/cf-templates-2hcb881mo1qp-eu-west-2/ec2_stack --parameters ParameterKey=KeyPair,ParameterValue=imran
-      
-          
+
+
 
 Upload / overwrite file to s3
 aws s3 cp 2017079268-template1bt5y6vxwam1lsmdh86vcmcxr s3://cf-templates-2hcb881mo1qp-eu-west-2

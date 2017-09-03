@@ -2,7 +2,7 @@ Mesos
 
 https://mesosphere.com/amazon/
 
-DC/OC 
+DC/OC
 
 1 master node
 1 public agent node
